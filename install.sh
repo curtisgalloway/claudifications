@@ -1,8 +1,19 @@
 #!/usr/bin/env bash
 # claude-fleet installer
 # Sets up the hook and Hammerspoon config for Claude Fleet monitoring.
+#
+# Usage: ./install.sh [-y]
+#   -y  Non-interactive: answer yes to all prompts (install Hammerspoon if missing)
 
 set -e
+
+YES=0
+while getopts "y" opt; do
+    case "$opt" in
+        y) YES=1 ;;
+        *) echo "Usage: $0 [-y]" >&2; exit 1 ;;
+    esac
+done
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 HOOK_DIR="$HOME/.claude/hooks"
@@ -15,8 +26,12 @@ if command -v brew >/dev/null 2>&1; then
     if brew list --cask hammerspoon >/dev/null 2>&1; then
         echo "Hammerspoon: already installed"
     else
-        printf "Hammerspoon is not installed. Install it now via Homebrew? [y/N] "
-        read -r answer
+        if [ "$YES" -eq 1 ]; then
+            answer="y"
+        else
+            printf "Hammerspoon is not installed. Install it now via Homebrew? [y/N] "
+            read -r answer
+        fi
         case "$answer" in
             [yY]|[yY][eE][sS])
                 brew install --cask hammerspoon

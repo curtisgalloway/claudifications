@@ -75,10 +75,17 @@ cat <<'JSON'
    }
 JSON
 echo ""
-echo "3. Reload Hammerspoon: click the menu bar icon -> Reload Config"
+echo "3. Reload Hammerspoon (or it will be done automatically if hs is in your PATH)"
 echo ""
 echo "4. Optional: suppress duplicate iTerm2 notifications:"
 echo "   iTerm2 -> Settings -> Profiles -> Terminal -> Filter Alerts"
 echo "   -> uncheck 'Send escape sequence-generated alerts'"
+echo ""
+if command -v hs >/dev/null 2>&1; then
+    hs -c 'hs.reload()'
+    echo "Hammerspoon config reloaded."
+else
+    echo "Reload Hammerspoon manually: click the menu bar icon -> Reload Config"
+fi
 echo ""
 echo "Done."

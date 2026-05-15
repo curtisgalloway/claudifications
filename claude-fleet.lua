@@ -153,6 +153,7 @@ local function panelFrame(count)
 end
 
 local function showPanel(items)
+    if not wv then return end
     wv:frame(panelFrame(#items))
     wv:html(buildHTML(items))
     if not wv:isVisible() then wv:show() end
@@ -163,6 +164,7 @@ local function hidePanel()
 end
 
 local function updatePanel()
+    if not wv then return end
     local items = getWaitingSessions()
 
     if #items == 0 then

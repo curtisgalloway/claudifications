@@ -97,8 +97,13 @@ echo "   iTerm2 -> Settings -> Profiles -> Terminal -> Filter Alerts"
 echo "   -> uncheck 'Send escape sequence-generated alerts'"
 echo ""
 if command -v hs >/dev/null 2>&1; then
-    hs -c 'hs.reload()'
-    echo "Hammerspoon config reloaded."
+    if pgrep -x Hammerspoon >/dev/null 2>&1; then
+        hs -c 'hs.reload()'
+        echo "Hammerspoon config reloaded."
+    else
+        open -a Hammerspoon
+        echo "Hammerspoon launched (will load config on startup)."
+    fi
 else
     echo "Reload Hammerspoon manually: click the menu bar icon -> Reload Config"
 fi

@@ -11,6 +11,34 @@ HS_DIR="$HOME/.hammerspoon"
 echo "=== Claude Fleet Installer ==="
 echo ""
 
+if command -v brew >/dev/null 2>&1; then
+    if brew list --cask hammerspoon >/dev/null 2>&1; then
+        echo "Hammerspoon: already installed"
+    else
+        printf "Hammerspoon is not installed. Install it now via Homebrew? [y/N] "
+        read -r answer
+        case "$answer" in
+            [yY]|[yY][eE][sS])
+                brew install --cask hammerspoon
+                echo "Hammerspoon installed."
+                ;;
+            *)
+                echo "Skipping Hammerspoon install."
+                echo "  -> Install manually: brew install --cask hammerspoon"
+                echo "     or download from https://www.hammerspoon.org"
+                ;;
+        esac
+    fi
+else
+    if [ -d "/Applications/Hammerspoon.app" ]; then
+        echo "Hammerspoon: found (installed without Homebrew)"
+    else
+        echo "Note: Homebrew not found. Install Hammerspoon manually if needed:"
+        echo "  https://www.hammerspoon.org"
+    fi
+fi
+echo ""
+
 mkdir -p "$HOOK_DIR"
 cp "$REPO_DIR/hooks/fleet-status.sh" "$HOOK_DIR/fleet-status.sh"
 chmod +x "$HOOK_DIR/fleet-status.sh"

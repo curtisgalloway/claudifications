@@ -11,6 +11,7 @@ local STALE_HOURS = 8
 
 local wv      = nil
 local watcher = nil
+local bubble  = nil
 
 -- ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -176,8 +177,7 @@ local function updatePanel()
         wv:frame(panelFrame(#items))
         wv:html(buildHTML(items))
     else
-        local snd = hs.sound.getByName("Bubble")
-        if snd then snd:play() end
+        if bubble then bubble:play() end
         showPanel(items)
     end
 end
@@ -196,6 +196,8 @@ end
 
 function M.start()
     M.stop()
+    bubble = hs.sound.getByName("Bubble")
+
     local function markDismissed(sid)
         if not sid or sid == "" then return end
         local path = STATUS_DIR .. "/" .. sid .. ".json"

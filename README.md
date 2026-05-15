@@ -1,4 +1,4 @@
-# Claude Fleet
+# Claudification
 
 A macOS tool that watches all your running [Claude Code](https://claude.ai/code) CLI sessions and shows a floating panel whenever one is waiting for your input — so you can see at a glance which agents need attention and jump straight to them.
 

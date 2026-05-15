@@ -176,12 +176,18 @@ local function updatePanel()
         wv:frame(panelFrame(#items))
         wv:html(buildHTML(items))
     else
-        hs.sound.getByName("Bubble"):play()
+        local snd = hs.sound.getByName("Bubble")
+        if snd then snd:play() end
         showPanel(items)
     end
 end
 
 -- ── public ───────────────────────────────────────────────────────────────────
+
+function M.stop()
+    if watcher then watcher:stop(); watcher = nil end
+    if wv then wv:delete(); wv = nil end
+end
 
 function M.show()
     local items = getWaitingSessions()
@@ -189,6 +195,7 @@ function M.show()
 end
 
 function M.start()
+    M.stop()
     local function markDismissed(sid)
         if not sid or sid == "" then return end
         local path = STATUS_DIR .. "/" .. sid .. ".json"

@@ -9,7 +9,7 @@ struct PreferencesView: View {
     var body: some View {
         Form {
             Section {
-                HStack(spacing: 12) {
+                HStack(spacing: 8) {
                     Picker("Sound", selection: $selectedSound) {
                         ForEach(SoundPlayer.availableSounds, id: \.self) { name in
                             Text(name).tag(name)
@@ -17,11 +17,19 @@ struct PreferencesView: View {
                     }
                     .pickerStyle(.menu)
                     .frame(width: 160)
-
-                    Button("Preview") {
-                        SoundPlayer().play(named: selectedSound)
+                    .onChange(of: selectedSound) { _, newValue in
+                        SoundPlayer().play(named: newValue)
                     }
+
+                    Button {
+                        SoundPlayer().play(named: selectedSound)
+                    } label: {
+                        Image(systemName: "play.circle")
+                            .imageScale(.large)
+                    }
+                    .buttonStyle(.plain)
                     .disabled(selectedSound == SoundPlayer.noneOption)
+                    .help("Play sound")
                 }
             } header: {
                 Text("Notification Sound")

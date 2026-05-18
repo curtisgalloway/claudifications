@@ -24,9 +24,14 @@ final class PanelController {
             return
         }
         let frame = targetFrame(count: sessionCount)
-        panel.setFrame(frame, display: true, animate: false)
-        if !panel.isVisible {
-            panel.orderFrontRegardless()
+        // Defer setFrame to the next run loop pass to avoid triggering
+        // layoutSubtreeIfNeeded while SwiftUI is already mid-layout.
+        DispatchQueue.main.async { [weak panel] in
+            guard let panel else { return }
+            panel.setFrame(frame, display: false, animate: false)
+            if !panel.isVisible {
+                panel.orderFrontRegardless()
+            }
         }
     }
 

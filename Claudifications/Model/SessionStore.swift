@@ -10,11 +10,11 @@ final class SessionStore {
     var onNewWaitingSession: (() -> Void)?
 
     private let statusDir: URL
-    private var dispatchSource: DispatchSourceFileSystemObject?
-    private var dirFD: Int32 = -1
+    private var pollTimer: DispatchSourceTimer?
     private var previousWaitingCount = 0
 
     private static let staleInterval: TimeInterval = 8 * 3600
+    private static let pollInterval: TimeInterval = 0.5
 
     private static let decoder: JSONDecoder = {
         let d = JSONDecoder()
@@ -40,12 +40,12 @@ final class SessionStore {
     func start() {
         try? FileManager.default.createDirectory(at: statusDir, withIntermediateDirectories: true)
         reload()
-        startWatching()
+        startPolling()
     }
 
     func stop() {
-        dispatchSource?.cancel()
-        dispatchSource = nil
+        pollTimer?.cancel()
+        pollTimer = nil
     }
 
     func dismiss(_ session: Session) {
@@ -98,25 +98,18 @@ final class SessionStore {
         reload()
     }
 
-    private func startWatching() {
-        let fd = open(statusDir.path, O_EVTONLY)
-        guard fd != -1 else { return }
-        dirFD = fd
-
-        let source = DispatchSource.makeFileSystemObjectSource(
-            fileDescriptor: fd,
-            eventMask: [.write, .rename, .delete],
-            queue: .global(qos: .utility)
-        )
-        source.setEventHandler { [weak self] in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                self?.reload()
-            }
+    // Uses a timer rather than a directory kqueue watcher because kqueue NOTE_WRITE
+    // on a directory only fires for directory-entry changes (create/delete/rename),
+    // not for overwrites of existing files. Since the hook overwrites the same
+    // <session_id>.json when state changes (working → waiting), a directory watcher
+    // misses those transitions. A 500ms poll picks them up reliably.
+    private func startPolling() {
+        let timer = DispatchSource.makeTimerSource(queue: .global(qos: .utility))
+        timer.schedule(deadline: .now() + Self.pollInterval, repeating: Self.pollInterval)
+        timer.setEventHandler { [weak self] in
+            self?.reload()
         }
-        source.setCancelHandler {
-            close(fd)
-        }
-        source.resume()
-        dispatchSource = source
+        timer.resume()
+        pollTimer = timer
     }
 }

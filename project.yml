@@ -1,0 +1,28 @@
+name: Claudifications
+options:
+  bundleIdPrefix: net.curtisg
+  deploymentTarget:
+    macOS: "14.0"
+  defaultConfig: Debug
+
+targets:
+  Claudifications:
+    type: application
+    platform: macOS
+    sources:
+      - path: Claudifications
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: net.curtisg.claudifications
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        SWIFT_VERSION: "5.9"
+        SWIFT_STRICT_CONCURRENCY: minimal
+        INFOPLIST_FILE: Claudifications/Info.plist
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+      debug:
+        SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+        DEBUG_INFORMATION_FORMAT: dwarf
+      release:
+        SWIFT_OPTIMIZATION_LEVEL: "-O"
+        DEBUG_INFORMATION_FORMAT: "dwarf-with-dsym"

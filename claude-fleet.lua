@@ -240,7 +240,6 @@ function M.start()
                 local uuid = extractUUID(iid)
                 local script = string.format([[
                     tell application "iTerm2"
-                        activate
                         repeat with aWindow in windows
                             repeat with aTab in tabs of aWindow
                                 repeat with aSession in sessions of aTab
@@ -248,11 +247,13 @@ function M.start()
                                         select aWindow
                                         tell aTab to select
                                         tell aSession to select
+                                        activate
                                         return
                                     end if
                                 end repeat
                             end repeat
                         end repeat
+                        activate
                     end tell
                 ]], uuid)
                 hs.osascript.applescript(script)

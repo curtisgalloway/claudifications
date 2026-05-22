@@ -73,7 +73,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     // MARK: - Actions
 
     @objc private func showAbout() {
-        NSApp.orderFrontStandardAboutPanel(nil)
+        let tagline = NSAttributedString(
+            string: "Organize your Claude notifications",
+            attributes: [
+                .font: NSFont.systemFont(ofSize: 11),
+                .foregroundColor: NSColor.secondaryLabelColor,
+            ]
+        )
+        NSApp.orderFrontStandardAboutPanel(options: [.credits: tagline])
         NSApp.activate(ignoringOtherApps: true)
     }
 

@@ -1,2 +1,5 @@
 Spoons/
 *.DS_Store
+build/
+Claudifications.xcodeproj/xcuserdata/
+Claudifications.xcodeproj/project.xcworkspace/xcuserdata/

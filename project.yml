@@ -11,6 +11,8 @@ targets:
     platform: macOS
     sources:
       - path: Claudifications
+      - path: hooks/fleet-status.sh
+        type: resource
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: net.curtisg.claudifications

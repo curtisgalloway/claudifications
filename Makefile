@@ -13,6 +13,7 @@ build: generate
 		build
 
 install: build
+	rm -rf /Applications/Claudifications.app
 	cp -R $(OUTDIR)/Claudifications.app /Applications/
 
 clean:

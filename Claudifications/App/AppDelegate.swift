@@ -4,12 +4,15 @@
 import AppKit
 import Observation
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var store: SessionStore!
     private var soundPlayer: SoundPlayer!
     private var panelController: PanelController!
     private var statusItem: NSStatusItem!
     private var preferencesWindowController: PreferencesWindowController?
+
+    private var installHooksItem: NSMenuItem!
+    private var removeHooksItem: NSMenuItem!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         store = SessionStore()
@@ -41,10 +44,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let menu = NSMenu()
+        menu.delegate = self
+
+        menu.addItem(NSMenuItem(title: "About Claudifications", action: #selector(showAbout), keyEquivalent: ""))
+        menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Preferences…", action: #selector(openPreferences), keyEquivalent: ","))
+        menu.addItem(.separator())
+
+        installHooksItem = NSMenuItem(title: "Install Hooks…", action: #selector(installHooks), keyEquivalent: "")
+        menu.addItem(installHooksItem)
+
+        removeHooksItem = NSMenuItem(title: "Remove Hooks", action: #selector(removeHooks), keyEquivalent: "")
+        menu.addItem(removeHooksItem)
+
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         statusItem.menu = menu
+    }
+
+    // MARK: - NSMenuDelegate
+
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        let installed = HookInstaller.isInstalled
+        installHooksItem.title = installed ? "Reinstall Hooks" : "Install Hooks…"
+        removeHooksItem.isEnabled = installed
+    }
+
+    // MARK: - Actions
+
+    @objc private func showAbout() {
+        NSApp.orderFrontStandardAboutPanel(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     @objc private func openPreferences() {
@@ -53,6 +83,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         preferencesWindowController?.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @objc private func installHooks() {
+        let installed = HookInstaller.isInstalled
+        let alert = NSAlert()
+        alert.messageText = installed ? "Reinstall Claude Code hooks?" : "Install Claude Code hooks?"
+        alert.informativeText = "Copies fleet-status.sh to ~/.claude/hooks/ and adds hook entries to ~/.claude/settings.json."
+        alert.addButton(withTitle: installed ? "Reinstall" : "Install")
+        alert.addButton(withTitle: "Cancel")
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        do {
+            try HookInstaller.install()
+        } catch {
+            NSAlert(error: error).runModal()
+        }
+    }
+
+    @objc private func removeHooks() {
+        let alert = NSAlert()
+        alert.messageText = "Remove Claude Code hooks?"
+        alert.informativeText = "Deletes fleet-status.sh from ~/.claude/hooks/ and removes the hook entries from ~/.claude/settings.json."
+        alert.addButton(withTitle: "Remove")
+        alert.addButton(withTitle: "Cancel")
+        alert.buttons[0].hasDestructiveAction = true
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        do {
+            try HookInstaller.remove()
+        } catch {
+            NSAlert(error: error).runModal()
+        }
     }
 
     // MARK: - Store observation

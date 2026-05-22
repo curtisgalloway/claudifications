@@ -13,7 +13,12 @@ cat > "$TMPFILE"
 export FLEET_STATE="$STATE"
 export FLEET_CWD="$PWD"
 export FLEET_PROJECT
-FLEET_PROJECT=$(basename "$PWD")
+GIT_ROOT=$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null)
+if [ -n "$GIT_ROOT" ]; then
+    FLEET_PROJECT=$(basename "$GIT_ROOT")
+else
+    FLEET_PROJECT=$(basename "$PWD")
+fi
 export FLEET_ITERM="${ITERM_SESSION_ID:-}"
 export FLEET_INPUT="$TMPFILE"
 export FLEET_STATUS_DIR="$STATUS_DIR"

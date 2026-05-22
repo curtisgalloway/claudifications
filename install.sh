@@ -1,81 +1,38 @@
 #!/usr/bin/env bash
-# claude-fleet installer
-# Sets up the hook and Hammerspoon config for Claude Fleet monitoring.
+# Claudifications installer
+# Builds and installs the native macOS app and the Claude Code hook.
 #
-# Usage: ./install.sh [-y]
-#   -y  Non-interactive: answer yes to all prompts (install Hammerspoon if missing)
+# Usage: ./install.sh
 
 set -e
 
-YES=0
-while getopts "y" opt; do
-    case "$opt" in
-        y) YES=1 ;;
-        *) echo "Usage: $0 [-y]" >&2; exit 1 ;;
-    esac
-done
-
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 HOOK_DIR="$HOME/.claude/hooks"
-HS_DIR="$HOME/.hammerspoon"
+APP_NAME="Claudifications.app"
+APP_DEST="/Applications/$APP_NAME"
 
-echo "=== Claude Fleet Installer ==="
+echo "=== Claudifications Installer ==="
 echo ""
 
-if command -v brew >/dev/null 2>&1; then
-    if brew list --cask hammerspoon >/dev/null 2>&1; then
-        echo "Hammerspoon: already installed"
-    else
-        if [ "$YES" -eq 1 ]; then
-            answer="y"
-        else
-            printf "Hammerspoon is not installed. Install it now via Homebrew? [y/N] "
-            read -r answer
-        fi
-        case "$answer" in
-            [yY]|[yY][eE][sS])
-                brew install --cask hammerspoon
-                echo "Hammerspoon installed."
-                ;;
-            *)
-                echo "Skipping Hammerspoon install."
-                echo "  -> Install manually: brew install --cask hammerspoon"
-                echo "     or download from https://www.hammerspoon.org"
-                ;;
-        esac
-    fi
-else
-    if [ -d "/Applications/Hammerspoon.app" ]; then
-        echo "Hammerspoon: found (installed without Homebrew)"
-    else
-        echo "Note: Homebrew not found. Install Hammerspoon manually if needed:"
-        echo "  https://www.hammerspoon.org"
-    fi
-fi
+echo "Building $APP_NAME..."
+make -C "$REPO_DIR" build
+echo ""
+
+echo "Installing $APP_NAME to /Applications..."
+cp -R "$REPO_DIR/build/Release/$APP_NAME" "$APP_DEST"
+echo "Installed: $APP_DEST"
 echo ""
 
 mkdir -p "$HOOK_DIR"
 cp "$REPO_DIR/hooks/fleet-status.sh" "$HOOK_DIR/fleet-status.sh"
 chmod +x "$HOOK_DIR/fleet-status.sh"
 echo "Installed hook: $HOOK_DIR/fleet-status.sh"
-
-if [ ! -f "$HS_DIR/claude-fleet.lua" ]; then
-    cp "$REPO_DIR/claude-fleet.lua" "$HS_DIR/claude-fleet.lua"
-    echo "Installed: $HS_DIR/claude-fleet.lua"
-else
-    echo "Skipped (already exists): $HS_DIR/claude-fleet.lua"
-    echo "  -> To update: cp $REPO_DIR/claude-fleet.lua $HS_DIR/claude-fleet.lua"
-fi
-
 echo ""
+
 echo "=== Next steps ==="
 echo ""
-echo "1. Add these lines to your ~/.hammerspoon/init.lua:"
-echo ""
-echo '   if fleet then fleet.stop() end'
-echo '   package.loaded["claude-fleet"] = nil'
-echo '   fleet = require("claude-fleet")'
-echo '   fleet.start()'
+echo "1. Launch Claudifications:"
+echo "   open $APP_DEST"
 echo ""
 echo "2. Add the hooks to your ~/.claude/settings.json:"
 echo "   (merge this into the existing 'hooks' key, or create it)"
@@ -89,23 +46,5 @@ cat <<'JSON'
      }
    }
 JSON
-echo ""
-echo "3. Reload Hammerspoon (or it will be done automatically if hs is in your PATH)"
-echo ""
-echo "4. Optional: suppress duplicate iTerm2 notifications:"
-echo "   iTerm2 -> Settings -> Profiles -> Terminal -> Filter Alerts"
-echo "   -> uncheck 'Send escape sequence-generated alerts'"
-echo ""
-if command -v hs >/dev/null 2>&1; then
-    if pgrep -x Hammerspoon >/dev/null 2>&1; then
-        hs -c 'hs.reload()'
-        echo "Hammerspoon config reloaded."
-    else
-        open -a Hammerspoon
-        echo "Hammerspoon launched (will load config on startup)."
-    fi
-else
-    echo "Reload Hammerspoon manually: click the menu bar icon -> Reload Config"
-fi
 echo ""
 echo "Done."

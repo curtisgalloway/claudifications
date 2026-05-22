@@ -14,8 +14,10 @@
 		3AD6EDFFF5EF2711E94730E8 /* SoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71E6F64154BE1E0E7AA971B8 /* SoundPlayer.swift */; };
 		3DAEB929FD371579B567D6A8 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80765F3312B0CE41C13BA658 /* main.swift */; };
 		4AD91D0C04384BBECAAD22AD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6FFB19140AD96895C7022F7 /* AppDelegate.swift */; };
+		50611442326733BB4258C69E /* HookInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F00E0EADB415F3AEDBBDE1 /* HookInstaller.swift */; };
 		5DC6A0778927B66FF352E118 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71B52228DAAC25A18EF21763 /* PreferencesView.swift */; };
 		823EB36C04CED2EB4478CF66 /* PanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F3C5247926F15A59C24F65 /* PanelController.swift */; };
+		86291A9919F04ED9DECACE24 /* fleet-status.sh in Resources */ = {isa = PBXBuildFile; fileRef = 279A5096A4A46DB9805B39B8 /* fleet-status.sh */; };
 		8E9D331673CFAD0AA5AE4CC2 /* FloatingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D803A594AFE7374C22EE1F1 /* FloatingPanel.swift */; };
 		A4828391743953AC8DB4807B /* SessionRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9ADCEA003CB4286CFAA4EB /* SessionRowView.swift */; };
 		ADEF77DDCCA6C1398B7747FA /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D026EDF79316C3C5F98D89 /* SessionStore.swift */; };
@@ -26,9 +28,11 @@
 		07E4DAFBB28F1293E9941B5F /* PreferencesWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
 		0E9ADCEA003CB4286CFAA4EB /* SessionRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRowView.swift; sourceTree = "<group>"; };
 		241155C173EDBB1626A13AF0 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
+		279A5096A4A46DB9805B39B8 /* fleet-status.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "fleet-status.sh"; sourceTree = "<group>"; };
 		2D803A594AFE7374C22EE1F1 /* FloatingPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingPanel.swift; sourceTree = "<group>"; };
 		34A1387C1A321CF1F08EF8E6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3B205617B0CDFC1E918AC30B /* Claudifications.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Claudifications.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		47F00E0EADB415F3AEDBBDE1 /* HookInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HookInstaller.swift; sourceTree = "<group>"; };
 		71B52228DAAC25A18EF21763 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		71E6F64154BE1E0E7AA971B8 /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
 		77279B36634CDA20D2389308 /* SessionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionListView.swift; sourceTree = "<group>"; };
@@ -61,6 +65,7 @@
 		75CC4EB00DC4579BBF45AE99 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				47F00E0EADB415F3AEDBBDE1 /* HookInstaller.swift */,
 				241155C173EDBB1626A13AF0 /* Session.swift */,
 				94D026EDF79316C3C5F98D89 /* SessionStore.swift */,
 			);
@@ -98,6 +103,7 @@
 			isa = PBXGroup;
 			children = (
 				E5B468B900986641B3533471 /* Claudifications */,
+				E8E9F51DE824080DF7DC3638 /* hooks */,
 				43B13545488A8786F0BCA6DC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -115,6 +121,14 @@
 				C33BC76088364AC9BF5CE128 /* UI */,
 			);
 			path = Claudifications;
+			sourceTree = "<group>";
+		};
+		E8E9F51DE824080DF7DC3638 /* hooks */ = {
+			isa = PBXGroup;
+			children = (
+				279A5096A4A46DB9805B39B8 /* fleet-status.sh */,
+			);
+			path = hooks;
 			sourceTree = "<group>";
 		};
 		EBFE9D362B14A42BC0318285 /* Preferences */ = {
@@ -187,6 +201,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0400BEE0C2343CCA22154B28 /* Assets.xcassets in Resources */,
+				86291A9919F04ED9DECACE24 /* fleet-status.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -199,6 +214,7 @@
 			files = (
 				4AD91D0C04384BBECAAD22AD /* AppDelegate.swift in Sources */,
 				8E9D331673CFAD0AA5AE4CC2 /* FloatingPanel.swift in Sources */,
+				50611442326733BB4258C69E /* HookInstaller.swift in Sources */,
 				24254FE448BC6493821EC81B /* ITermBridge.swift in Sources */,
 				823EB36C04CED2EB4478CF66 /* PanelController.swift in Sources */,
 				5DC6A0778927B66FF352E118 /* PreferencesView.swift in Sources */,

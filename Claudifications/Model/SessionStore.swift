@@ -7,11 +7,10 @@ import Observation
 @Observable
 final class SessionStore {
     private(set) var sessions: [Session] = []
-    var onNewWaitingSession: (() -> Void)?
+    var onNewWaitingSession: (([Session]) -> Void)?
 
     private let statusDir: URL
     private var pollTimer: DispatchSourceTimer?
-    private var previousWaitingCount = 0
 
     private static let staleInterval: TimeInterval = 8 * 3600
     private static let pollInterval: TimeInterval = 0.5
@@ -76,15 +75,15 @@ final class SessionStore {
             loaded.append(session)
         }
 
-        let newCount = loaded.filter { $0.isWaiting }.count
+        let previousWaitingIds = Set(sessions.filter { $0.isWaiting }.map { $0.id })
+        let newWaiting = loaded.filter { $0.isWaiting && !previousWaitingIds.contains($0.id) }
 
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             self.sessions = loaded
-            if newCount > self.previousWaitingCount {
-                self.onNewWaitingSession?()
+            if !newWaiting.isEmpty {
+                self.onNewWaitingSession?(newWaiting)
             }
-            self.previousWaitingCount = newCount
         }
     }
 

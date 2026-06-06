@@ -10,7 +10,7 @@ struct SessionListView: View {
         VStack(spacing: 0) {
             header
             ForEach(Array(store.waitingSessions.enumerated()), id: \.element.id) { index, session in
-                SessionRowView(session: session)
+                SessionRowView(session: session, index: index)
                 if index < store.waitingSessions.count - 1 {
                     Divider()
                         .overlay(Color.white.opacity(0.08))

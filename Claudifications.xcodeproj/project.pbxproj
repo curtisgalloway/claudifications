@@ -18,15 +18,18 @@
 		5DC6A0778927B66FF352E118 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71B52228DAAC25A18EF21763 /* PreferencesView.swift */; };
 		823EB36C04CED2EB4478CF66 /* PanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F3C5247926F15A59C24F65 /* PanelController.swift */; };
 		86291A9919F04ED9DECACE24 /* fleet-status.sh in Resources */ = {isa = PBXBuildFile; fileRef = 279A5096A4A46DB9805B39B8 /* fleet-status.sh */; };
+		89A7541D6528E7C7C21D3D60 /* JumpShortcutModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBBACD04B9D130B08863F366 /* JumpShortcutModifiers.swift */; };
 		8E9D331673CFAD0AA5AE4CC2 /* FloatingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D803A594AFE7374C22EE1F1 /* FloatingPanel.swift */; };
 		A4828391743953AC8DB4807B /* SessionRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9ADCEA003CB4286CFAA4EB /* SessionRowView.swift */; };
 		ADEF77DDCCA6C1398B7747FA /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D026EDF79316C3C5F98D89 /* SessionStore.swift */; };
 		BD30721C2CF77C0CDD26A77B /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241155C173EDBB1626A13AF0 /* Session.swift */; };
+		DFCD1F423C87907988D9EFD3 /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1254E43FE0BE4D5852078B13 /* HotkeyManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		07E4DAFBB28F1293E9941B5F /* PreferencesWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
 		0E9ADCEA003CB4286CFAA4EB /* SessionRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRowView.swift; sourceTree = "<group>"; };
+		1254E43FE0BE4D5852078B13 /* HotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
 		241155C173EDBB1626A13AF0 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		279A5096A4A46DB9805B39B8 /* fleet-status.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "fleet-status.sh"; sourceTree = "<group>"; };
 		2D803A594AFE7374C22EE1F1 /* FloatingPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingPanel.swift; sourceTree = "<group>"; };
@@ -41,10 +44,20 @@
 		B7F3C5247926F15A59C24F65 /* PanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelController.swift; sourceTree = "<group>"; };
 		BE1F36736673705CD511BE13 /* ITermBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ITermBridge.swift; sourceTree = "<group>"; };
 		D6FFB19140AD96895C7022F7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		EBBACD04B9D130B08863F366 /* JumpShortcutModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JumpShortcutModifiers.swift; sourceTree = "<group>"; };
 		EC2BB801864A8BC489F075F3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		0926DDFCB73F39C9348BC85C /* Hotkeys */ = {
+			isa = PBXGroup;
+			children = (
+				1254E43FE0BE4D5852078B13 /* HotkeyManager.swift */,
+				EBBACD04B9D130B08863F366 /* JumpShortcutModifiers.swift */,
+			);
+			path = Hotkeys;
+			sourceTree = "<group>";
+		};
 		43B13545488A8786F0BCA6DC /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -116,6 +129,7 @@
 				62A380DC3B2C37524FB5FEFF /* App */,
 				C652D99396971B900F184FBA /* Audio */,
 				889D928DF61218CD8A54CDA3 /* Bridge */,
+				0926DDFCB73F39C9348BC85C /* Hotkeys */,
 				75CC4EB00DC4579BBF45AE99 /* Model */,
 				EBFE9D362B14A42BC0318285 /* Preferences */,
 				C33BC76088364AC9BF5CE128 /* UI */,
@@ -215,7 +229,9 @@
 				4AD91D0C04384BBECAAD22AD /* AppDelegate.swift in Sources */,
 				8E9D331673CFAD0AA5AE4CC2 /* FloatingPanel.swift in Sources */,
 				50611442326733BB4258C69E /* HookInstaller.swift in Sources */,
+				DFCD1F423C87907988D9EFD3 /* HotkeyManager.swift in Sources */,
 				24254FE448BC6493821EC81B /* ITermBridge.swift in Sources */,
+				89A7541D6528E7C7C21D3D60 /* JumpShortcutModifiers.swift in Sources */,
 				823EB36C04CED2EB4478CF66 /* PanelController.swift in Sources */,
 				5DC6A0778927B66FF352E118 /* PreferencesView.swift in Sources */,
 				35CB5B737F463C690DCC2C5F /* PreferencesWindowController.swift in Sources */,

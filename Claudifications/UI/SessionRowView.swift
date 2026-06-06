@@ -5,8 +5,17 @@ import SwiftUI
 
 struct SessionRowView: View {
     let session: Session
+    let index: Int
     @Environment(SessionStore.self) private var store
     @State private var isHovered = false
+    @AppStorage(JumpShortcutModifiers.storageKey)
+    private var jumpModifiersRaw = JumpShortcutModifiers.defaultValue.rawValue
+
+    private var shortcutHint: String? {
+        let modifiers = JumpShortcutModifiers(rawValue: jumpModifiersRaw) ?? .defaultValue
+        guard modifiers != .off, index < 9 else { return nil }
+        return "\(modifiers.symbols)\(index + 1)"
+    }
 
     var body: some View {
         HStack(spacing: 10) {
@@ -33,6 +42,19 @@ struct SessionRowView: View {
             .onTapGesture {
                 store.dismiss(session)
                 ITermBridge.jump(itermSessionId: session.itermSessionId)
+            }
+
+            if let hint = shortcutHint {
+                Text(hint)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(Color(white: 0.53))
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.white.opacity(0.08))
+                    )
+                    .help("Press \(hint) to jump to this agent")
             }
 
             Button {

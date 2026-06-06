@@ -10,6 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var panelController: PanelController!
     private var statusItem: NSStatusItem!
     private var preferencesWindowController: PreferencesWindowController?
+    private var hotkeyManager: HotkeyManager!
 
     private var installHooksItem: NSMenuItem!
     private var removeHooksItem: NSMenuItem!
@@ -26,11 +27,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self?.soundPlayer.playNotification()
         }
 
+        hotkeyManager = HotkeyManager()
+        hotkeyManager.onJump = { [weak self] index in
+            guard let self else { return }
+            let waiting = self.store.waitingSessions
+            guard index < waiting.count else { return }
+            let session = waiting[index]
+            self.store.dismiss(session)
+            ITermBridge.jump(itermSessionId: session.itermSessionId)
+        }
+        hotkeyManager.start()
+
         store.start()
         observeStore()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        hotkeyManager.stop()
         store.stop()
     }
 

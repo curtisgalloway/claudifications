@@ -5,49 +5,33 @@ import AppKit
 
 @MainActor
 enum ITermBridge {
+    private static let bundleID = "com.googlecode.iterm2"
+
+    /// Reveals the session via iTerm2's URL scheme, which accepts the full
+    /// ITERM_SESSION_ID ("w0t0p0:UUID") directly. Falls back to just
+    /// activating iTerm2 when no session id is available.
     static func jump(itermSessionId: String) {
-        guard !itermSessionId.isEmpty,
-              let uuid = extractUUID(from: itermSessionId) else {
+        guard !itermSessionId.isEmpty, let url = revealURL(for: itermSessionId) else {
             activate()
             return
         }
+        NSWorkspace.shared.open(url)
+        // Reveal selects the window/tab/pane but is not guaranteed to raise
+        // a minimized window; an explicit activate covers that case.
+        activate()
+    }
 
-        let script = """
-            tell application "iTerm2"
-                repeat with aWindow in windows
-                    repeat with aTab in tabs of aWindow
-                        repeat with aSession in sessions of aTab
-                            if unique id of aSession is "\(uuid)" then
-                                select aWindow
-                                tell aTab to select
-                                tell aSession to select
-                                activate
-                                return
-                            end if
-                        end repeat
-                    end repeat
-                end repeat
-                activate
-            end tell
-            """
-        run(script)
+    private static func revealURL(for itermSessionId: String) -> URL? {
+        var components = URLComponents()
+        components.scheme = "iterm2"
+        components.host = ""
+        components.path = "/reveal"
+        components.queryItems = [URLQueryItem(name: "sessionid", value: itermSessionId)]
+        return components.url
     }
 
     private static func activate() {
-        run(#"tell application "iTerm2" to activate"#)
-    }
-
-    private static func extractUUID(from itermId: String) -> String? {
-        let parts = itermId.split(separator: ":")
-        guard parts.count >= 2 else { return itermId.isEmpty ? nil : itermId }
-        return String(parts[1])
-    }
-
-    private static func run(_ source: String) {
-        var error: NSDictionary?
-        NSAppleScript(source: source)?.executeAndReturnError(&error)
-        if let error {
-            print("[ITermBridge] AppleScript error: \(error)")
-        }
+        guard let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else { return }
+        NSWorkspace.shared.openApplication(at: appURL, configuration: NSWorkspace.OpenConfiguration())
     }
 }

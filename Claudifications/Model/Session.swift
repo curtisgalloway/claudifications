@@ -21,13 +21,6 @@ struct Session: Identifiable, Codable, Equatable {
         return "\(minutes) min ago"
     }
 
-    // Extracts the UUID from ITERM_SESSION_ID format "w0t0p0:UUID" or "w0t0p0:UUID:depth"
-    var itermUUID: String? {
-        guard !itermSessionId.isEmpty else { return nil }
-        let parts = itermSessionId.split(separator: ":")
-        return parts.count >= 2 ? String(parts[1]) : itermSessionId
-    }
-
     enum CodingKeys: String, CodingKey {
         case sessionId    = "session_id"
         case state

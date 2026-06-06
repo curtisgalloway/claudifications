@@ -13,7 +13,7 @@ final class PanelController {
     private static let headerHeight: CGFloat = 34
 
     func setup(store: SessionStore) {
-        let rootView = SessionListView().environment(store)
+        let rootView = PanelRootView().environment(store)
         panel = FloatingPanel(rootView: rootView)
     }
 

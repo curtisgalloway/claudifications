@@ -5,6 +5,9 @@ import SwiftUI
 
 struct SessionListView: View {
     @Environment(SessionStore.self) private var store
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var palette: PanelPalette { .palette(for: colorScheme) }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -13,14 +16,14 @@ struct SessionListView: View {
                 SessionRowView(session: session, index: index)
                 if index < store.waitingSessions.count - 1 {
                     Divider()
-                        .overlay(Color.white.opacity(0.08))
+                        .overlay(palette.separator)
                         .padding(.leading, 14)
                 }
             }
         }
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(red: 44/255, green: 44/255, blue: 48/255, opacity: 0.97))
+                .fill(palette.background)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
@@ -29,7 +32,7 @@ struct SessionListView: View {
         HStack {
             Text("Claude Agents")
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(Color(white: 0.53))
+                .foregroundStyle(palette.secondaryText)
                 .textCase(.uppercase)
                 .kerning(0.7)
             Spacer()
@@ -38,7 +41,7 @@ struct SessionListView: View {
             } label: {
                 Text("✕")
                     .font(.system(size: 13))
-                    .foregroundStyle(Color(white: 0.4))
+                    .foregroundStyle(palette.headerDismiss)
             }
             .buttonStyle(.plain)
             .help("Dismiss all")
@@ -48,7 +51,7 @@ struct SessionListView: View {
         .padding(.bottom, 9)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(Color.white.opacity(0.08))
+                .fill(palette.separator)
                 .frame(height: 1)
         }
     }

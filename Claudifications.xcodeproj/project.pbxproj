@@ -24,6 +24,7 @@
 		ADEF77DDCCA6C1398B7747FA /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D026EDF79316C3C5F98D89 /* SessionStore.swift */; };
 		BD30721C2CF77C0CDD26A77B /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241155C173EDBB1626A13AF0 /* Session.swift */; };
 		DFCD1F423C87907988D9EFD3 /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1254E43FE0BE4D5852078B13 /* HotkeyManager.swift */; };
+		EBDC2325B88BB798D0DE1AAD /* PanelTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78541A4C05F1E2CC960719BC /* PanelTheme.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +40,7 @@
 		71B52228DAAC25A18EF21763 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		71E6F64154BE1E0E7AA971B8 /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
 		77279B36634CDA20D2389308 /* SessionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionListView.swift; sourceTree = "<group>"; };
+		78541A4C05F1E2CC960719BC /* PanelTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelTheme.swift; sourceTree = "<group>"; };
 		80765F3312B0CE41C13BA658 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		94D026EDF79316C3C5F98D89 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		B7F3C5247926F15A59C24F65 /* PanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelController.swift; sourceTree = "<group>"; };
@@ -98,6 +100,7 @@
 			children = (
 				2D803A594AFE7374C22EE1F1 /* FloatingPanel.swift */,
 				B7F3C5247926F15A59C24F65 /* PanelController.swift */,
+				78541A4C05F1E2CC960719BC /* PanelTheme.swift */,
 				77279B36634CDA20D2389308 /* SessionListView.swift */,
 				0E9ADCEA003CB4286CFAA4EB /* SessionRowView.swift */,
 			);
@@ -233,6 +236,7 @@
 				24254FE448BC6493821EC81B /* ITermBridge.swift in Sources */,
 				89A7541D6528E7C7C21D3D60 /* JumpShortcutModifiers.swift in Sources */,
 				823EB36C04CED2EB4478CF66 /* PanelController.swift in Sources */,
+				EBDC2325B88BB798D0DE1AAD /* PanelTheme.swift in Sources */,
 				5DC6A0778927B66FF352E118 /* PreferencesView.swift in Sources */,
 				35CB5B737F463C690DCC2C5F /* PreferencesWindowController.swift in Sources */,
 				BD30721C2CF77C0CDD26A77B /* Session.swift in Sources */,

@@ -7,6 +7,8 @@ struct PreferencesView: View {
     @AppStorage("notificationSound") private var selectedSound: String = SoundPlayer.defaultSound
     @AppStorage(JumpShortcutModifiers.storageKey)
     private var jumpModifiersRaw = JumpShortcutModifiers.defaultValue.rawValue
+    @AppStorage(PanelAppearance.storageKey)
+    private var appearanceRaw = PanelAppearance.defaultValue.rawValue
 
     private var jumpModifiers: JumpShortcutModifiers {
         JumpShortcutModifiers(rawValue: jumpModifiersRaw) ?? .defaultValue
@@ -58,8 +60,20 @@ struct PreferencesView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+
+            Section {
+                Picker("Theme", selection: $appearanceRaw) {
+                    ForEach(PanelAppearance.allCases) { appearance in
+                        Text(appearance.label).tag(appearance.rawValue)
+                    }
+                }
+                .pickerStyle(.menu)
+                .frame(width: 160)
+            } header: {
+                Text("Appearance")
+            }
         }
         .formStyle(.grouped)
-        .frame(width: 360, height: 240)
+        .frame(width: 360, height: 320)
     }
 }

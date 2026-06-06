@@ -35,9 +35,11 @@ enum HookInstaller {
     }
 
     private static let hookEntries: [(event: String, command: String)] = [
-        ("Stop",         "~/.claude/hooks/fleet-status.sh waiting"),
-        ("Notification", "~/.claude/hooks/fleet-status.sh waiting"),
-        ("PreToolUse",   "~/.claude/hooks/fleet-status.sh working"),
+        ("Stop",             "~/.claude/hooks/fleet-status.sh waiting"),
+        ("Notification",     "~/.claude/hooks/fleet-status.sh waiting"),
+        ("PreToolUse",       "~/.claude/hooks/fleet-status.sh working"),
+        ("UserPromptSubmit", "~/.claude/hooks/fleet-status.sh working"),
+        ("SessionEnd",       "~/.claude/hooks/fleet-status.sh ended"),
     ]
 
     private static func mergeSettings(adding: Bool) throws {

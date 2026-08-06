@@ -8,11 +8,21 @@ struct Session: Identifiable, Codable, Equatable {
     var state: String
     let cwd: String
     let project: String
+    /// Absent from records written by hooks older than the branch label, and
+    /// empty when the session isn't in a git repo.
+    let branch: String?
     let itermSessionId: String
     let timestamp: Date
 
     var id: String { sessionId }
     var isWaiting: Bool { state == "waiting" }
+
+    /// The branch to show beside the project name, or nil when there is none
+    /// worth showing.
+    var displayBranch: String? {
+        guard let branch, !branch.isEmpty else { return nil }
+        return branch
+    }
 
     var age: String {
         let minutes = Int(-timestamp.timeIntervalSinceNow / 60)
@@ -26,6 +36,7 @@ struct Session: Identifiable, Codable, Equatable {
         case state
         case cwd
         case project
+        case branch
         case itermSessionId = "iterm_session_id"
         case timestamp
     }

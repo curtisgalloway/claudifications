@@ -76,16 +76,43 @@ final class SessionStore {
             loaded.append(session)
         }
 
-        let newCount = loaded.filter { $0.isWaiting }.count
+        let deduped = Self.dedupedByPane(loaded)
+        let newCount = deduped.filter { $0.isWaiting }.count
 
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            self.sessions = loaded
+            self.sessions = deduped
             if newCount > self.previousWaitingCount {
                 self.onNewWaitingSession?()
             }
             self.previousWaitingCount = newCount
         }
+    }
+
+    /// An iTerm pane can only host one live session, so when several records
+    /// claim the same pane the older ones are leftovers from sessions that died
+    /// without firing SessionEnd — a killed terminal, a crash. Showing them
+    /// produces rows that look like duplicates and all jump to the same place.
+    /// Keep the newest per pane; the stale sweep in `reload()` deletes the files
+    /// on its own schedule. Records with no pane (sessions not started from
+    /// iTerm2) can't be told apart this way and are all kept.
+    private static func dedupedByPane(_ sessions: [Session]) -> [Session] {
+        var newestByPane: [String: Session] = [:]
+        var paneless: [Session] = []
+
+        for session in sessions {
+            guard !session.itermSessionId.isEmpty else {
+                paneless.append(session)
+                continue
+            }
+            if let existing = newestByPane[session.itermSessionId],
+               existing.timestamp >= session.timestamp {
+                continue
+            }
+            newestByPane[session.itermSessionId] = session
+        }
+
+        return paneless + newestByPane.values
     }
 
     private func write(session: Session, state: String) {

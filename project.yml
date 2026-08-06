@@ -19,6 +19,9 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: net.curtisg.claudifications
         MACOSX_DEPLOYMENT_TARGET: "14.0"
+        # Release builds override both from the git tag; see .github/workflows.
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
         SWIFT_VERSION: "5.9"
         SWIFT_STRICT_CONCURRENCY: minimal
         INFOPLIST_FILE: Claudifications/Info.plist

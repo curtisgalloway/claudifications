@@ -64,6 +64,25 @@ deliberately doesn't go there.
 
 ## Installation
 
+### Download a release
+
+Grab `Claudifications.zip` from the [latest release](https://github.com/curtisgalloway/claudifications/releases/latest),
+unzip it, and move `Claudifications.app` to `/Applications`.
+
+Release builds are **not signed with an Apple Developer ID**, so macOS
+quarantines them on download. Clear that with:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Claudifications.app
+```
+
+Or open it once and allow it under System Settings → Privacy & Security →
+Open Anyway. (On macOS Sequoia and later, right-click → Open no longer works.)
+
+Then launch the app and choose **Install Hooks** from the menu bar icon.
+
+### Build from source
+
 ```bash
 git clone https://github.com/curtisgalloway/claudifications.git
 cd claudifications
@@ -150,6 +169,26 @@ directory and deletes anything that isn't a valid session record.
 **iTerm2 jump doesn't work**
 - Make sure iTerm2 has Automation permission: System Settings → Privacy & Security → Automation → Claudifications → iTerm2 ✓
 - The jump uses `ITERM_SESSION_ID` from the environment when Claude Code starts — it only works in sessions launched from iTerm2
+
+## Releasing
+
+`.github/workflows/build.yml` builds every push to `main` and every PR, and
+attaches the built app as a workflow artifact.
+
+To cut a release, push a tag:
+
+```bash
+git tag v1.2.3
+git push origin v1.2.3
+```
+
+`.github/workflows/release.yml` builds it, stamps `CFBundleShortVersionString`
+from the tag (minus the leading `v`) and `CFBundleVersion` from the run number,
+packages the bundle with `ditto`, and publishes a GitHub Release with install
+instructions and a SHA-256.
+
+The `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` values in `project.yml` are
+placeholders for local builds — only tagged CI builds carry a real version.
 
 ## License
 

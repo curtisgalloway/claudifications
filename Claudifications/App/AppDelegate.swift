@@ -3,6 +3,7 @@
 
 import AppKit
 import Observation
+import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var store: SessionStore!
@@ -14,6 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private var installHooksItem: NSMenuItem!
     private var removeHooksItem: NSMenuItem!
+    private var usageView: NSHostingView<UsageMenuView>!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         store = SessionStore()
@@ -63,6 +65,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let menu = NSMenu()
         menu.delegate = self
 
+        usageView = NSHostingView(
+            rootView: UsageMenuView(usage: nil, isStatusLineInstalled: false)
+        )
+        usageView.sizingOptions = [.intrinsicContentSize]
+        resizeUsageView()
+        let usageItem = NSMenuItem()
+        usageItem.view = usageView
+        usageItem.isEnabled = false
+        menu.addItem(usageItem)
+        menu.addItem(.separator())
+
         menu.addItem(NSMenuItem(title: "About Claudifications", action: #selector(showAbout), keyEquivalent: ""))
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Preferences…", action: #selector(openPreferences), keyEquivalent: ","))
@@ -85,6 +98,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let installed = HookInstaller.isInstalled
         installHooksItem.title = installed ? "Reinstall Hooks" : "Install Hooks…"
         removeHooksItem.isEnabled = installed
+
+        // Read on open rather than polling: the readout is only ever visible
+        // while the menu is down, so a background timer would be wasted work.
+        usageView.rootView = UsageMenuView(
+            usage: PlanUsage.load(),
+            isStatusLineInstalled: HookInstaller.isStatusLineInstalled
+        )
+        resizeUsageView()
+    }
+
+    /// NSMenu sizes a custom item from its view's frame, and reads that frame
+    /// before SwiftUI has had a chance to lay out — so an intrinsic size alone
+    /// leaves the item collapsed. Measure and set the frame explicitly instead.
+    private func resizeUsageView() {
+        usageView.layoutSubtreeIfNeeded()
+        let height = usageView.fittingSize.height
+        usageView.frame = NSRect(x: 0, y: 0, width: UsageMenuView.width, height: height)
     }
 
     // MARK: - Actions
@@ -113,21 +143,51 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let installed = HookInstaller.isInstalled
         let alert = NSAlert()
         alert.messageText = installed ? "Reinstall Claude Code hooks?" : "Install Claude Code hooks?"
-        alert.informativeText = "Copies fleet-status.sh to ~/.claude/hooks/ and adds hook entries to ~/.claude/settings.json."
+        alert.informativeText = """
+            Copies fleet-status.sh and usage-statusline.py to ~/.claude/hooks/, \
+            then adds the hook entries and the plan-usage status line to \
+            ~/.claude/settings.json.
+            """
         alert.addButton(withTitle: installed ? "Reinstall" : "Install")
         alert.addButton(withTitle: "Cancel")
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         do {
-            try HookInstaller.install()
+            if case .conflict(let existing) = try HookInstaller.install() {
+                showStatusLineConflict(existing: existing)
+            }
         } catch {
             NSAlert(error: error).runModal()
         }
     }
 
+    /// Claude Code supports exactly one status line, so an existing one is left
+    /// in place — the plan-usage readout then needs wiring up by hand.
+    private func showStatusLineConflict(existing: String) {
+        let alert = NSAlert()
+        alert.messageText = "Hooks installed — status line left alone"
+        alert.informativeText = """
+            You already have a status line configured:
+
+                \(existing)
+
+            Claude Code allows only one, so it was not replaced and the plan \
+            usage readout will stay empty. To enable it, have your status line \
+            also run:
+
+                \(HookInstaller.statusLineCommand)
+            """
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
+    }
+
     @objc private func removeHooks() {
         let alert = NSAlert()
         alert.messageText = "Remove Claude Code hooks?"
-        alert.informativeText = "Deletes fleet-status.sh from ~/.claude/hooks/ and removes the hook entries from ~/.claude/settings.json."
+        alert.informativeText = """
+            Deletes fleet-status.sh and usage-statusline.py from ~/.claude/hooks/ \
+            and removes the hook entries from ~/.claude/settings.json. The status \
+            line is only cleared if it still points at Claudifications.
+            """
         alert.addButton(withTitle: "Remove")
         alert.addButton(withTitle: "Cancel")
         alert.buttons[0].hasDestructiveAction = true

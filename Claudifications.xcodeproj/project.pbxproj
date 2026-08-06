@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0400BEE0C2343CCA22154B28 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34A1387C1A321CF1F08EF8E6 /* Assets.xcassets */; };
+		1266A411AC6D0396BE6E33DD /* UsageMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2AF177EEFCCCEF85BE7A72 /* UsageMenuView.swift */; };
 		24254FE448BC6493821EC81B /* ITermBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE1F36736673705CD511BE13 /* ITermBridge.swift */; };
 		35CB5B737F463C690DCC2C5F /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07E4DAFBB28F1293E9941B5F /* PreferencesWindowController.swift */; };
 		3AD457E30C197F4D9D84A590 /* SessionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77279B36634CDA20D2389308 /* SessionListView.swift */; };
@@ -21,8 +22,10 @@
 		89A7541D6528E7C7C21D3D60 /* JumpShortcutModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBBACD04B9D130B08863F366 /* JumpShortcutModifiers.swift */; };
 		8E9D331673CFAD0AA5AE4CC2 /* FloatingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D803A594AFE7374C22EE1F1 /* FloatingPanel.swift */; };
 		A4828391743953AC8DB4807B /* SessionRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9ADCEA003CB4286CFAA4EB /* SessionRowView.swift */; };
+		A79ADEA4E4407A9EAB0329C2 /* usage-statusline.py in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C2899D4748B91236400D1 /* usage-statusline.py */; };
 		ADEF77DDCCA6C1398B7747FA /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D026EDF79316C3C5F98D89 /* SessionStore.swift */; };
 		BD30721C2CF77C0CDD26A77B /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241155C173EDBB1626A13AF0 /* Session.swift */; };
+		BE04522F068B427CC27CAD35 /* PlanUsage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E7E433D5E50600355F14F69 /* PlanUsage.swift */; };
 		DFCD1F423C87907988D9EFD3 /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1254E43FE0BE4D5852078B13 /* HotkeyManager.swift */; };
 		EBDC2325B88BB798D0DE1AAD /* PanelTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78541A4C05F1E2CC960719BC /* PanelTheme.swift */; };
 /* End PBXBuildFile section */
@@ -31,12 +34,15 @@
 		07E4DAFBB28F1293E9941B5F /* PreferencesWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
 		0E9ADCEA003CB4286CFAA4EB /* SessionRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRowView.swift; sourceTree = "<group>"; };
 		1254E43FE0BE4D5852078B13 /* HotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
+		1E7E433D5E50600355F14F69 /* PlanUsage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanUsage.swift; sourceTree = "<group>"; };
 		241155C173EDBB1626A13AF0 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		279A5096A4A46DB9805B39B8 /* fleet-status.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "fleet-status.sh"; sourceTree = "<group>"; };
 		2D803A594AFE7374C22EE1F1 /* FloatingPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingPanel.swift; sourceTree = "<group>"; };
 		34A1387C1A321CF1F08EF8E6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3B205617B0CDFC1E918AC30B /* Claudifications.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Claudifications.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		47F00E0EADB415F3AEDBBDE1 /* HookInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HookInstaller.swift; sourceTree = "<group>"; };
+		4D2AF177EEFCCCEF85BE7A72 /* UsageMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageMenuView.swift; sourceTree = "<group>"; };
+		6D8C2899D4748B91236400D1 /* usage-statusline.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = "usage-statusline.py"; sourceTree = "<group>"; };
 		71B52228DAAC25A18EF21763 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		71E6F64154BE1E0E7AA971B8 /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
 		77279B36634CDA20D2389308 /* SessionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionListView.swift; sourceTree = "<group>"; };
@@ -81,6 +87,7 @@
 			isa = PBXGroup;
 			children = (
 				47F00E0EADB415F3AEDBBDE1 /* HookInstaller.swift */,
+				1E7E433D5E50600355F14F69 /* PlanUsage.swift */,
 				241155C173EDBB1626A13AF0 /* Session.swift */,
 				94D026EDF79316C3C5F98D89 /* SessionStore.swift */,
 			);
@@ -103,6 +110,7 @@
 				78541A4C05F1E2CC960719BC /* PanelTheme.swift */,
 				77279B36634CDA20D2389308 /* SessionListView.swift */,
 				0E9ADCEA003CB4286CFAA4EB /* SessionRowView.swift */,
+				4D2AF177EEFCCCEF85BE7A72 /* UsageMenuView.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -144,6 +152,7 @@
 			isa = PBXGroup;
 			children = (
 				279A5096A4A46DB9805B39B8 /* fleet-status.sh */,
+				6D8C2899D4748B91236400D1 /* usage-statusline.py */,
 			);
 			path = hooks;
 			sourceTree = "<group>";
@@ -219,6 +228,7 @@
 			files = (
 				0400BEE0C2343CCA22154B28 /* Assets.xcassets in Resources */,
 				86291A9919F04ED9DECACE24 /* fleet-status.sh in Resources */,
+				A79ADEA4E4407A9EAB0329C2 /* usage-statusline.py in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -237,6 +247,7 @@
 				89A7541D6528E7C7C21D3D60 /* JumpShortcutModifiers.swift in Sources */,
 				823EB36C04CED2EB4478CF66 /* PanelController.swift in Sources */,
 				EBDC2325B88BB798D0DE1AAD /* PanelTheme.swift in Sources */,
+				BE04522F068B427CC27CAD35 /* PlanUsage.swift in Sources */,
 				5DC6A0778927B66FF352E118 /* PreferencesView.swift in Sources */,
 				35CB5B737F463C690DCC2C5F /* PreferencesWindowController.swift in Sources */,
 				BD30721C2CF77C0CDD26A77B /* Session.swift in Sources */,
@@ -244,6 +255,7 @@
 				A4828391743953AC8DB4807B /* SessionRowView.swift in Sources */,
 				ADEF77DDCCA6C1398B7747FA /* SessionStore.swift in Sources */,
 				3AD6EDFFF5EF2711E94730E8 /* SoundPlayer.swift in Sources */,
+				1266A411AC6D0396BE6E33DD /* UsageMenuView.swift in Sources */,
 				3DAEB929FD371579B567D6A8 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

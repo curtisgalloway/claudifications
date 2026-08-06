@@ -14,9 +14,15 @@ cat > "$TMPFILE"
 export FLEET_STATE="$STATE"
 export FLEET_CWD="$PWD"
 export FLEET_PROJECT
+export FLEET_BRANCH=""
 GIT_ROOT=$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null)
 if [ -n "$GIT_ROOT" ]; then
     FLEET_PROJECT=$(basename "$GIT_ROOT")
+    # symbolic-ref fails on a detached HEAD; fall back to the short SHA.
+    FLEET_BRANCH=$(git -C "$PWD" symbolic-ref --short -q HEAD 2>/dev/null)
+    if [ -z "$FLEET_BRANCH" ]; then
+        FLEET_BRANCH=$(git -C "$PWD" rev-parse --short HEAD 2>/dev/null)
+    fi
 else
     FLEET_PROJECT=$(basename "$PWD")
 fi
@@ -54,6 +60,7 @@ else:
         'state': state,
         'cwd': os.environ['FLEET_CWD'],
         'project': os.environ['FLEET_PROJECT'],
+        'branch': os.environ.get('FLEET_BRANCH', ''),
         'iterm_session_id': os.environ['FLEET_ITERM'],
         'timestamp': os.environ['FLEET_TIMESTAMP'],
     }

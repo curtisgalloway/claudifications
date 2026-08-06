@@ -6,7 +6,7 @@ A native macOS app that watches all your running [Claude Code](https://claude.ai
 
 ## What it does
 
-- **Floating notification panel** (top-right, non-focus-stealing) lists every Claude session waiting for input, with project name, working directory, and how long it's been waiting
+- **Floating notification panel** (top-right, non-focus-stealing) lists every Claude session waiting for input, with project name, git branch, working directory, and how long it's been waiting — the branch is what tells two agents in the same repo apart
 - **Sound alert** plays when the panel first appears, not on subsequent updates
 - **Click to jump** directly to the right iTerm2 tab/pane
 - **Jump from the keyboard** with ⌥⌘1–9 anywhere in the system; each row shows

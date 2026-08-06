@@ -28,11 +28,22 @@ struct SessionRowView: View {
                 .padding(.leading, 14)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(session.project)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(palette.primaryText)
-                    .lineLimit(1)
-                    .underline(isHovered)
+                HStack(spacing: 6) {
+                    Text(session.project)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(palette.primaryText)
+                        .lineLimit(1)
+                        .underline(isHovered)
+                    // Two agents in one repo look identical without this.
+                    if let branch = session.displayBranch {
+                        Text(branch)
+                            .font(.system(size: 11))
+                            .foregroundStyle(palette.secondaryText)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                            .layoutPriority(-1)
+                    }
+                }
                 Text("\(session.cwd) • \(session.age)")
                     .font(.system(size: 11))
                     .foregroundStyle(palette.secondaryText)

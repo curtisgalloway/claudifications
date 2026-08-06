@@ -2,18 +2,22 @@
 
 A native macOS app that watches all your running [Claude Code](https://claude.ai/code) CLI sessions and shows a floating panel whenever one is waiting for your input — so you can see at a glance which agents need attention and jump straight to them.
 
-![Panel screenshot placeholder](docs/panel.png)
+![The floating panel listing two waiting sessions, each with its jump shortcut](docs/panel.png)
 
 ## What it does
 
 - **Floating notification panel** (top-right, non-focus-stealing) lists every Claude session waiting for input, with project name, working directory, and how long it's been waiting
 - **Sound alert** plays when the panel first appears, not on subsequent updates
 - **Click to jump** directly to the right iTerm2 tab/pane
+- **Jump from the keyboard** with ⌥⌘1–9 anywhere in the system; each row shows
+  its own shortcut, and the modifiers are configurable in Preferences
 - **Dismiss** individual sessions (✕ per row) or all at once (✕ in header)
 - **Menu bar icon** for quick access and preferences
 - **Plan usage meters** at the top of the menu bar dropdown — the same
   "Current session" and "Current week (all models)" figures `/usage` reports,
   as colored bars with a countdown to each reset
+
+![The menu bar dropdown, with plan usage meters above the hook and preference items](docs/menu.png)
 
 ## How it works
 

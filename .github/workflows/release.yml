@@ -1,0 +1,92 @@
+name: Release
+
+# Tag a release with:  git tag v1.2.3 && git push origin v1.2.3
+# Can also be run manually from the Actions tab, but only with a tag selected
+# as the ref — the release is named after it.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+
+    steps:
+      - name: Require a tag ref
+        if: github.ref_type != 'tag'
+        run: |
+          echo "::error::Run this from a tag, not ${{ github.ref_type }} '${{ github.ref_name }}'."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Check Python hook scripts
+        run: |
+          scripts=$(find hooks -name '*.py')
+          if [ -z "$scripts" ]; then
+            echo "No Python hook scripts to check."
+            exit 0
+          fi
+          echo "$scripts" | xargs python3 -m py_compile
+
+      # CFBundleShortVersionString / CFBundleVersion resolve from these, so the
+      # About panel reports the tag rather than project.yml's placeholder.
+      - name: Build
+        env:
+          TAG: ${{ github.ref_name }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          make build XCFLAGS="MARKETING_VERSION=${TAG#v} CURRENT_PROJECT_VERSION=${BUILD_NUMBER}"
+
+      # ditto, not zip: it preserves the bundle's symlinks and metadata, which
+      # a plain zip mangles badly enough that the .app won't launch.
+      - name: Package
+        run: |
+          ditto -c -k --keepParent build/Release/Claudifications.app Claudifications.zip
+          shasum -a 256 Claudifications.zip | tee checksum.txt
+
+      - name: Write release notes
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          CHECKSUM=$(cut -d' ' -f1 checksum.txt)
+          cat > notes.md <<EOF
+          ## Install
+
+          1. Download \`Claudifications.zip\` below and unzip it.
+          2. Move \`Claudifications.app\` to \`/Applications\`.
+          3. **This build is not signed with an Apple Developer ID**, so macOS
+             quarantines it. Clear that with:
+
+             \`\`\`bash
+             xattr -dr com.apple.quarantine /Applications/Claudifications.app
+             \`\`\`
+
+             Or open it once, then allow it under System Settings → Privacy &
+             Security → Open Anyway. (On macOS Sequoia and later, right-click →
+             Open no longer works for this.)
+          4. Launch it, then choose **Install Hooks** from the menu bar icon to
+             wire up \`~/.claude/settings.json\`.
+
+          Requires macOS 14 or later.
+
+          \`SHA-256: ${CHECKSUM}\`
+          EOF
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" \
+            Claudifications.zip \
+            --title "$TAG" \
+            --notes-file notes.md \
+            --generate-notes

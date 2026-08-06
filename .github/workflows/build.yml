@@ -1,0 +1,54 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      # Xcode never touches these, so a syntax error would otherwise ship
+      # silently and only surface as a broken hook on a user's machine.
+      # Globbed rather than named so the check spans branches that add or
+      # drop hook scripts.
+      - name: Check Python hook scripts
+        run: |
+          scripts=$(find hooks -name '*.py')
+          if [ -z "$scripts" ]; then
+            echo "No Python hook scripts to check."
+            exit 0
+          fi
+          echo "$scripts" | xargs python3 -m py_compile
+          echo "Checked:"
+          echo "$scripts"
+
+      - name: Build
+        run: make build
+
+      # project.pbxproj is tracked but generated. `make build` regenerates it,
+      # so drift never fails the build — flag it rather than let it go unnoticed.
+      - name: Check generated project is in sync
+        run: |
+          if ! git diff --quiet -- Claudifications.xcodeproj/project.pbxproj; then
+            echo "::warning::project.pbxproj differs from xcodegen output — run 'make generate' and commit the result."
+          fi
+
+      - name: Package
+        run: ditto -c -k --keepParent build/Release/Claudifications.app Claudifications.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Claudifications-${{ github.sha }}
+          path: Claudifications.zip
+          retention-days: 14

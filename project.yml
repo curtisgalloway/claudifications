@@ -13,6 +13,8 @@ targets:
       - path: Claudifications
       - path: hooks/fleet-status.sh
         type: resource
+      - path: hooks/usage-statusline.py
+        type: resource
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: net.curtisg.claudifications

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Claude Code fleet status hook
-# Called by Stop/Notification (state=waiting) and PreToolUse (state=working) hooks
+# Called by Stop/Notification (state=waiting), PreToolUse/UserPromptSubmit
+# (state=working), and SessionEnd (state=ended, removes the file) hooks
 # Writes session state to ~/.claude/fleet-status/<session_id>.json
 
 STATE="$1"
@@ -38,19 +39,26 @@ session_id = hook_data.get('session_id', 'unknown')
 if not session_id:
     session_id = 'unknown'
 
-data = {
-    'session_id': session_id,
-    'state': os.environ['FLEET_STATE'],
-    'cwd': os.environ['FLEET_CWD'],
-    'project': os.environ['FLEET_PROJECT'],
-    'iterm_session_id': os.environ['FLEET_ITERM'],
-    'timestamp': os.environ['FLEET_TIMESTAMP'],
-}
-
 status_dir = os.environ['FLEET_STATUS_DIR']
 out_path = os.path.join(status_dir, f"{session_id}.json")
-with open(out_path, 'w') as f:
-    json.dump(data, f)
+state = os.environ['FLEET_STATE']
+
+if state == 'ended':
+    try:
+        os.remove(out_path)
+    except FileNotFoundError:
+        pass
+else:
+    data = {
+        'session_id': session_id,
+        'state': state,
+        'cwd': os.environ['FLEET_CWD'],
+        'project': os.environ['FLEET_PROJECT'],
+        'iterm_session_id': os.environ['FLEET_ITERM'],
+        'timestamp': os.environ['FLEET_TIMESTAMP'],
+    }
+    with open(out_path, 'w') as f:
+        json.dump(data, f)
 PYEOF
 
 rm -f "$TMPFILE"

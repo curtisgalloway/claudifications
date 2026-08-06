@@ -3,6 +3,10 @@
 
 import AppKit
 
+// Jumping uses AppleScript rather than the iterm2:///reveal?sessionid= URL
+// scheme: the URL scheme was tested (iTerm2 3.5.x, full ITERM_SESSION_ID and
+// bare-UUID forms) and does not actually reveal the session, even from the
+// command line. The AppleScript iteration is verified working.
 @MainActor
 enum ITermBridge {
     static func jump(itermSessionId: String) {

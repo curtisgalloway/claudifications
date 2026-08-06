@@ -11,6 +11,9 @@ A native macOS app that watches all your running [Claude Code](https://claude.ai
 - **Click to jump** directly to the right iTerm2 tab/pane
 - **Dismiss** individual sessions (✕ per row) or all at once (✕ in header)
 - **Menu bar icon** for quick access and preferences
+- **Plan usage meters** at the top of the menu bar dropdown — the same
+  "Current session" and "Current week (all models)" figures `/usage` reports,
+  as colored bars with a countdown to each reset
 
 ## How it works
 
@@ -23,6 +26,34 @@ Claude Code session
 ```
 
 When you act on a session (click or dismiss), the state is updated to `"dismissed"` and the row disappears.
+
+Plan usage rides a separate path, because Claude Code exposes subscription
+limits only to the status line — not to hooks:
+
+```
+Claude Code session (re-renders its status line)
+  → pipes session JSON, incl. a `rate_limits` block, to usage-statusline.py
+  → writes ~/.claude/claudifications/usage.json
+  → Claudifications reads it when you open the menu bar dropdown
+```
+
+Two things follow from that. The readout only refreshes while a session is on
+screen, so it is dimmed once the reading is over 15 minutes old — and if a
+usage window has reset since the last reading, that bar shows `—` rather than a
+stale number. Claude Code also only sends `rate_limits` to subscribers, and only
+after a session's first API response, so a brand-new install shows nothing until
+you have used a session.
+
+### What it can't show
+
+`rate_limits` carries exactly two windows, `five_hour` and `seven_day`, which
+correspond to `/usage`'s **Current session** and **Current week (all models)**
+rows (verified by matching their reset timestamps). `/usage`'s third row,
+**Current week (Fable)**, has no equivalent — the per-model breakdown exists
+only behind an authenticated `GET /api/oauth/usage`, which would require reading
+and refreshing your OAuth credentials from the Keychain. Refreshing a token
+another process owns risks invalidating the CLI's own credentials, so this app
+deliberately doesn't go there.
 
 ## Prerequisites
 
@@ -53,8 +84,8 @@ Then install the hook and wire `settings.json` manually:
 
 ```bash
 mkdir -p ~/.claude/hooks
-cp hooks/fleet-status.sh ~/.claude/hooks/
-chmod +x ~/.claude/hooks/fleet-status.sh
+cp hooks/fleet-status.sh hooks/usage-statusline.py ~/.claude/hooks/
+chmod +x ~/.claude/hooks/fleet-status.sh ~/.claude/hooks/usage-statusline.py
 ```
 
 **Wire the hook in `~/.claude/settings.json`**
@@ -71,9 +102,15 @@ chmod +x ~/.claude/hooks/fleet-status.sh
     "PreToolUse": [
       {"hooks": [{"type": "command", "command": "~/.claude/hooks/fleet-status.sh working"}]}
     ]
-  }
+  },
+  "statusLine": {"type": "command", "command": "~/.claude/hooks/usage-statusline.py"}
 }
 ```
+
+Claude Code allows exactly one status line. **Install Hooks** in the menu will
+never overwrite an existing one — it tells you instead. To run both, have your
+own status line also invoke `~/.claude/hooks/usage-statusline.py`; it prints a
+compact `5h 12%  7d 34%` summary you can append to your own output.
 
 ## Optional: Suppress duplicate iTerm2 notifications
 
@@ -85,18 +122,30 @@ iTerm2 → Settings → Profiles → Terminal → Filter Alerts → uncheck **"S
 
 ```
 ~/.claude/
-  settings.json         ← hook wiring lives here
+  settings.json           ← hook + statusLine wiring lives here
   hooks/
-    fleet-status.sh     ← writes state files (this repo)
+    fleet-status.sh       ← writes session state files (this repo)
+    usage-statusline.py   ← writes plan usage (this repo)
   fleet-status/
-    <session_id>.json   ← runtime state, auto-managed
+    <session_id>.json     ← per-session runtime state, auto-managed
+  claudifications/
+    usage.json            ← latest plan usage reading, auto-managed
 ```
+
+`usage.json` sits outside `fleet-status/` on purpose: the app sweeps that
+directory and deletes anything that isn't a valid session record.
 
 ## Troubleshooting
 
 **Panel never appears**
 - Verify the hook fires: run `claude` in a terminal, let it stop, then check `ls ~/.claude/fleet-status/`
 - Confirm `settings.json` has the hooks and is valid JSON
+
+**Plan usage shows "No reading yet"**
+- The status line only runs in an interactive session — `claude -p` won't trigger it
+- Confirm the wiring: `~/.claude/hooks/usage-statusline.py` exists and `statusLine` in `settings.json` points at it
+- Check for a reading: `cat ~/.claude/claudifications/usage.json`
+- `rate_limits` reaches the status line only for Claude subscribers, and only after the session's first API response
 
 **iTerm2 jump doesn't work**
 - Make sure iTerm2 has Automation permission: System Settings → Privacy & Security → Automation → Claudifications → iTerm2 ✓

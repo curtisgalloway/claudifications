@@ -27,6 +27,10 @@ mkdir -p "$HOOK_DIR"
 cp "$REPO_DIR/hooks/fleet-status.sh" "$HOOK_DIR/fleet-status.sh"
 chmod +x "$HOOK_DIR/fleet-status.sh"
 echo "Installed hook: $HOOK_DIR/fleet-status.sh"
+
+cp "$REPO_DIR/hooks/usage-statusline.py" "$HOOK_DIR/usage-statusline.py"
+chmod +x "$HOOK_DIR/usage-statusline.py"
+echo "Installed status line: $HOOK_DIR/usage-statusline.py"
 echo ""
 
 echo "=== Next steps ==="
@@ -43,8 +47,13 @@ cat <<'JSON'
        "Stop": [{"hooks": [{"type": "command", "command": "~/.claude/hooks/fleet-status.sh waiting"}]}],
        "Notification": [{"hooks": [{"type": "command", "command": "~/.claude/hooks/fleet-status.sh waiting"}]}],
        "PreToolUse": [{"hooks": [{"type": "command", "command": "~/.claude/hooks/fleet-status.sh working"}]}]
-     }
+     },
+     "statusLine": {"type": "command", "command": "~/.claude/hooks/usage-statusline.py"}
    }
 JSON
+echo ""
+echo "   The statusLine entry powers the plan-usage readout in the menu bar."
+echo "   Claude Code allows only one status line — if you already have one,"
+echo "   keep it and have it also run usage-statusline.py."
 echo ""
 echo "Done."

@@ -73,15 +73,8 @@ deliberately doesn't go there.
 Grab `Claudifications.zip` from the [latest release](https://github.com/curtisgalloway/claudifications/releases/latest),
 unzip it, and move `Claudifications.app` to `/Applications`.
 
-Release builds are **not signed with an Apple Developer ID**, so macOS
-quarantines them on download. Clear that with:
-
-```bash
-xattr -dr com.apple.quarantine /Applications/Claudifications.app
-```
-
-Or open it once and allow it under System Settings → Privacy & Security →
-Open Anyway. (On macOS Sequoia and later, right-click → Open no longer works.)
+Release builds are signed with an Apple Developer ID and notarized by Apple, so
+they open normally — no `xattr` dance and no Privacy & Security override.
 
 Then launch the app and choose **Install Hooks** from the menu bar icon.
 
@@ -188,11 +181,60 @@ git push origin v1.2.3
 
 `.github/workflows/release.yml` builds it, stamps `CFBundleShortVersionString`
 from the tag (minus the leading `v`) and `CFBundleVersion` from the run number,
-packages the bundle with `ditto`, and publishes a GitHub Release with install
-instructions and a SHA-256.
+signs and notarizes the bundle, packages it with `ditto`, and publishes a
+GitHub Release with install instructions and a SHA-256.
 
 The `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` values in `project.yml` are
 placeholders for local builds — only tagged CI builds carry a real version.
+
+### Signing and notarization
+
+Local builds are ad-hoc signed (`CODE_SIGN_IDENTITY: "-"`), so a clone builds
+and runs with no Apple account. Only `release.yml` signs for real: it re-signs
+the finished bundle with the Developer ID identity, submits it to Apple's
+notary service, staples the ticket to the `.app`, and only then zips it.
+`build.yml` deliberately stays unsigned — PRs from forks can't read secrets.
+
+The hardened runtime is on for every configuration, which is why
+`Claudifications/Claudifications.entitlements` exists: `com.apple.security.automation.apple-events`
+is what lets click-to-jump drive iTerm2. Building locally with the same setting
+means an entitlement problem shows up on your machine, not in a release.
+
+Five repository secrets drive it (Settings → Secrets and variables → Actions):
+
+| Secret | What it holds |
+| --- | --- |
+| `MACOS_CERT_P12` | base64 of the exported **Developer ID Application** certificate + private key |
+| `MACOS_CERT_PASSWORD` | the password set when exporting that `.p12` |
+| `APPLE_ASC_KEY_ID` | App Store Connect API **Key ID** |
+| `APPLE_ASC_ISSUER_ID` | App Store Connect API **Issuer ID** |
+| `APPLE_ASC_KEY_P8` | base64 of the `AuthKey_<KeyID>.p8` file |
+
+To produce them:
+
+**Certificate.** Xcode → Settings → Accounts → your team → Manage Certificates
+→ **+** → *Developer ID Application*. Then in Keychain Access, right-click the
+new `Developer ID Application: …` identity → Export → `.p12` with a password.
+
+```bash
+base64 -i DeveloperID.p12 | pbcopy   # → MACOS_CERT_P12
+```
+
+**API key.** App Store Connect → Users and Access → Integrations → App Store
+Connect API → **Team Keys** → Generate API Key, role **Developer**. It must be
+a *team* key: personal keys are rejected by the notary service. The `.p8`
+downloads exactly once.
+
+```bash
+base64 -i AuthKey_XXXXXXXXXX.p8 | pbcopy   # → APPLE_ASC_KEY_P8
+```
+
+To check a published release from a clean machine:
+
+```bash
+spctl --assess --type exec -vvv /Applications/Claudifications.app
+# → accepted / source=Notarized Developer ID
+```
 
 ## License
 

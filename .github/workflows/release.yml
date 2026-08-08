@@ -45,8 +45,81 @@ jobs:
         run: |
           make build XCFLAGS="MARKETING_VERSION=${TAG#v} CURRENT_PROJECT_VERSION=${BUILD_NUMBER}"
 
+      # A throwaway keychain, not the login one: the runner's login keychain is
+      # unlocked for the whole job, so anything else running in it could reach
+      # the key. This one is deleted in Clean up, even if the job fails.
+      - name: Import signing certificate
+        env:
+          CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12 }}
+          CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD=$(uuidgen)
+          CERT_PATH="$RUNNER_TEMP/cert.p12"
+          printf '%s' "$CERT_P12_BASE64" | base64 --decode > "$CERT_PATH"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$CERT_PATH" -k "$KEYCHAIN" -P "$CERT_PASSWORD" \
+            -T /usr/bin/codesign
+          # Without this, codesign blocks on a GUI prompt for keychain access
+          # that no one is there to click, and the job hangs until it times out.
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
+          security list-keychain -d user -s "$KEYCHAIN" login.keychain-db
+          rm -f "$CERT_PATH"
+          security find-identity -v -p codesigning "$KEYCHAIN"
+
+      # Re-signs over the ad-hoc signature xcodebuild applied. The bundle holds
+      # a single Mach-O and no nested frameworks or helpers, so one pass covers
+      # it — no --deep needed (and Apple discourages it).
+      #
+      # --timestamp is required for notarization: without a secure timestamp
+      # the signature stops validating the moment the certificate expires.
+      - name: Sign
+        run: |
+          codesign --force --timestamp --options runtime \
+            --entitlements Claudifications/Claudifications.entitlements \
+            --sign "Developer ID Application" \
+            build/Release/Claudifications.app
+          codesign --verify --deep --strict --verbose=2 \
+            build/Release/Claudifications.app
+          # xcodebuild's ad-hoc pass adds get-task-allow, which notarization
+          # rejects. Re-signing replaces the entitlement set wholesale, so it
+          # should be gone — fail here rather than 10 minutes into notarytool.
+          if codesign -d --entitlements - --xml \
+               build/Release/Claudifications.app 2>/dev/null \
+               | grep -q get-task-allow; then
+            echo "::error::get-task-allow survived re-signing; notarization would reject this."
+            exit 1
+          fi
+
+      # Notary needs an archive, but the ticket is stapled to the .app itself,
+      # so this zip is scratch — Package builds the real one afterwards.
+      - name: Notarize and staple
+        env:
+          ASC_KEY_ID: ${{ secrets.APPLE_ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APPLE_ASC_ISSUER_ID }}
+          ASC_KEY_P8_BASE64: ${{ secrets.APPLE_ASC_KEY_P8 }}
+        run: |
+          KEY_PATH="$RUNNER_TEMP/asc-key.p8"
+          printf '%s' "$ASC_KEY_P8_BASE64" | base64 --decode > "$KEY_PATH"
+          ditto -c -k --keepParent build/Release/Claudifications.app \
+            "$RUNNER_TEMP/notarize.zip"
+          xcrun notarytool submit "$RUNNER_TEMP/notarize.zip" \
+            --key "$KEY_PATH" \
+            --key-id "$ASC_KEY_ID" \
+            --issuer "$ASC_ISSUER_ID" \
+            --wait --timeout 30m
+          rm -f "$KEY_PATH"
+          xcrun stapler staple build/Release/Claudifications.app
+          # Proves the shipped bundle carries a stapled ticket: this is what a
+          # user's Mac evaluates on first launch, and it passes offline.
+          spctl --assess --type exec -vvv build/Release/Claudifications.app
+
       # ditto, not zip: it preserves the bundle's symlinks and metadata, which
-      # a plain zip mangles badly enough that the .app won't launch.
+      # a plain zip mangles badly enough that the .app won't launch. Zipping
+      # after stapling is what carries the ticket to the user.
       - name: Package
         run: |
           ditto -c -k --keepParent build/Release/Claudifications.app Claudifications.zip
@@ -62,18 +135,13 @@ jobs:
 
           1. Download \`Claudifications.zip\` below and unzip it.
           2. Move \`Claudifications.app\` to \`/Applications\`.
-          3. **This build is not signed with an Apple Developer ID**, so macOS
-             quarantines it. Clear that with:
-
-             \`\`\`bash
-             xattr -dr com.apple.quarantine /Applications/Claudifications.app
-             \`\`\`
-
-             Or open it once, then allow it under System Settings → Privacy &
-             Security → Open Anyway. (On macOS Sequoia and later, right-click →
-             Open no longer works for this.)
-          4. Launch it, then choose **Install Hooks** from the menu bar icon to
+          3. Launch it, then choose **Install Hooks** from the menu bar icon to
              wire up \`~/.claude/settings.json\`.
+
+          This build is signed with an Apple Developer ID and notarized by
+          Apple, so it opens normally — no \`xattr\` dance, no Privacy &
+          Security override. The first click-to-jump will ask for permission to
+          control iTerm2.
 
           Requires macOS 14 or later.
 
@@ -90,3 +158,10 @@ jobs:
             --title "$TAG" \
             --notes-file notes.md \
             --generate-notes
+
+      # always(), so a failure between import and here doesn't strand the
+      # signing key on the runner.
+      - name: Clean up keychain
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/signing.keychain-db" || true

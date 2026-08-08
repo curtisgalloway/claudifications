@@ -53,6 +53,7 @@
 		B7F3C5247926F15A59C24F65 /* PanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelController.swift; sourceTree = "<group>"; };
 		BE1F36736673705CD511BE13 /* ITermBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ITermBridge.swift; sourceTree = "<group>"; };
 		D6FFB19140AD96895C7022F7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		E4CC82AFBB2677F278D75459 /* Claudifications.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Claudifications.entitlements; sourceTree = "<group>"; };
 		E5088FFF5129D32037CD1588 /* PanelPlacement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelPlacement.swift; sourceTree = "<group>"; };
 		EBBACD04B9D130B08863F366 /* JumpShortcutModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JumpShortcutModifiers.swift; sourceTree = "<group>"; };
 		EC2BB801864A8BC489F075F3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -139,6 +140,7 @@
 			isa = PBXGroup;
 			children = (
 				34A1387C1A321CF1F08EF8E6 /* Assets.xcassets */,
+				E4CC82AFBB2677F278D75459 /* Claudifications.entitlements */,
 				EC2BB801864A8BC489F075F3 /* Info.plist */,
 				62A380DC3B2C37524FB5FEFF /* App */,
 				C652D99396971B900F184FBA /* Audio */,
@@ -201,7 +203,7 @@
 				TargetAttributes = {
 					5D7004FCEE590BFEE119A8F4 = {
 						DevelopmentTeam = "";
-						ProvisioningStyle = Automatic;
+						ProvisioningStyle = Manual;
 					};
 				};
 			};
@@ -390,10 +392,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = Claudifications/Claudifications.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = Claudifications/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -412,10 +417,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = Claudifications/Claudifications.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = Claudifications/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

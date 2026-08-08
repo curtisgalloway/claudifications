@@ -49,6 +49,8 @@ struct SessionListView: View {
         .padding(.horizontal, 14)
         .padding(.top, 10)
         .padding(.bottom, 9)
+        .background(WindowDragHandle())
+        .help("Drag to move the panel")
         .overlay(alignment: .bottom) {
             Rectangle()
                 .fill(palette.separator)

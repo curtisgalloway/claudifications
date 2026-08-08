@@ -67,6 +67,11 @@ final class HotkeyManager {
             var ref: EventHotKeyRef?
             let hotKeyID = EventHotKeyID(signature: Self.signature, id: UInt32(index + 1))
             let status = RegisterEventHotKey(keyCode, flags, hotKeyID, GetEventDispatcherTarget(), 0, &ref)
+            // Not worth surfacing: `status` only reports eventHotKeyExistsErr for
+            // a duplicate registration inside this process, and returns noErr when
+            // another application already owns the combination. It cannot be used
+            // to warn about conflicts — JumpShortcutModifiers.conflictingApps
+            // carries what is actually known.
             if status == noErr, let ref {
                 hotKeyRefs.append(ref)
             }

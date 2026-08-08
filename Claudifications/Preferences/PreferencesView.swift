@@ -55,9 +55,14 @@ struct PreferencesView: View {
                 Text("Jump Shortcut")
             } footer: {
                 if jumpModifiers != .off {
-                    Text("Press \(jumpModifiers.symbols)1 through \(jumpModifiers.symbols)9 anywhere to jump to the matching agent in the list.")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Press \(jumpModifiers.symbols)1 through \(jumpModifiers.symbols)9 anywhere to jump to the matching agent in the list.")
+                        if let note = jumpModifiers.conflictNote {
+                            Text("\(note) A global shortcut takes those over while Claudifications is running.")
+                        }
+                    }
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
                 }
             }
 

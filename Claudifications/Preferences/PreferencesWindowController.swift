@@ -6,14 +6,18 @@ import SwiftUI
 
 final class PreferencesWindowController: NSWindowController {
     convenience init() {
+        // Size the window from the form rather than a guessed contentRect: a
+        // window shorter than its content is what puts a scroll bar on it.
+        let content = NSHostingView(rootView: PreferencesView())
+        content.layoutSubtreeIfNeeded()
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 340, height: 120),
+            contentRect: NSRect(origin: .zero, size: content.fittingSize),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
         )
         window.title = "Claudifications"
-        window.contentView = NSHostingView(rootView: PreferencesView())
+        window.contentView = content
         window.center()
         self.init(window: window)
     }

@@ -9,9 +9,40 @@ struct PreferencesView: View {
     private var jumpModifiersRaw = JumpShortcutModifiers.defaultValue.rawValue
     @AppStorage(PanelAppearance.storageKey)
     private var appearanceRaw = PanelAppearance.defaultValue.rawValue
+    @AppStorage(PanelPlacement.Key.corner)
+    private var cornerRaw = PanelPlacement.default.corner.rawValue
+    @AppStorage(PanelPlacement.Key.insetX)
+    private var insetX = Double(PanelPlacement.presetInset.width)
+    @AppStorage(PanelPlacement.Key.insetY)
+    private var insetY = Double(PanelPlacement.presetInset.height)
+
+    /// Stands in for "wherever you dragged it" — a placement no corner preset
+    /// can express, so it is shown as the selection but never chosen from here.
+    private static let customTag = "custom"
 
     private var jumpModifiers: JumpShortcutModifiers {
         JumpShortcutModifiers(rawValue: jumpModifiersRaw) ?? .defaultValue
+    }
+
+    private var isCustomPosition: Bool {
+        PanelPlacement.isCustom(insetX: insetX, insetY: insetY)
+    }
+
+    /// Picking a corner snaps the panel back to the preset margin, discarding
+    /// whatever inset a drag had left behind.
+    private var position: Binding<String> {
+        let corner = $cornerRaw, x = $insetX, y = $insetY
+        let isCustom = isCustomPosition
+        return Binding(
+            get: { isCustom ? Self.customTag : corner.wrappedValue },
+            set: { selected in
+                guard selected != Self.customTag else { return }
+                corner.wrappedValue = selected
+                x.wrappedValue = Double(PanelPlacement.presetInset.width)
+                y.wrappedValue = Double(PanelPlacement.presetInset.height)
+                NotificationCenter.default.post(name: .panelPlacementDidChange, object: nil)
+            }
+        )
     }
 
     var body: some View {
@@ -77,8 +108,28 @@ struct PreferencesView: View {
             } header: {
                 Text("Appearance")
             }
+
+            Section {
+                Picker("Position", selection: position) {
+                    ForEach(PanelCorner.allCases) { corner in
+                        Text(corner.label).tag(corner.rawValue)
+                    }
+                    if isCustomPosition {
+                        Divider()
+                        Text("Custom (dragged)").tag(Self.customTag)
+                    }
+                }
+                .pickerStyle(.menu)
+                .frame(width: 260)
+            } header: {
+                Text("Panel Position")
+            } footer: {
+                Text("Drag the panel by its header to put it anywhere; it comes back where you left it.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
-        .frame(width: 360, height: 320)
+        .frame(width: 400)
     }
 }

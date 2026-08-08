@@ -21,6 +21,7 @@
 		86291A9919F04ED9DECACE24 /* fleet-status.sh in Resources */ = {isa = PBXBuildFile; fileRef = 279A5096A4A46DB9805B39B8 /* fleet-status.sh */; };
 		89A7541D6528E7C7C21D3D60 /* JumpShortcutModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBBACD04B9D130B08863F366 /* JumpShortcutModifiers.swift */; };
 		8E9D331673CFAD0AA5AE4CC2 /* FloatingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D803A594AFE7374C22EE1F1 /* FloatingPanel.swift */; };
+		8FCC5115AC5EBB7294414D88 /* PanelPlacement.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5088FFF5129D32037CD1588 /* PanelPlacement.swift */; };
 		A4828391743953AC8DB4807B /* SessionRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9ADCEA003CB4286CFAA4EB /* SessionRowView.swift */; };
 		A79ADEA4E4407A9EAB0329C2 /* usage-statusline.py in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C2899D4748B91236400D1 /* usage-statusline.py */; };
 		ADEF77DDCCA6C1398B7747FA /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D026EDF79316C3C5F98D89 /* SessionStore.swift */; };
@@ -53,6 +54,7 @@
 		BE1F36736673705CD511BE13 /* ITermBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ITermBridge.swift; sourceTree = "<group>"; };
 		D6FFB19140AD96895C7022F7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E4CC82AFBB2677F278D75459 /* Claudifications.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Claudifications.entitlements; sourceTree = "<group>"; };
+		E5088FFF5129D32037CD1588 /* PanelPlacement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelPlacement.swift; sourceTree = "<group>"; };
 		EBBACD04B9D130B08863F366 /* JumpShortcutModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JumpShortcutModifiers.swift; sourceTree = "<group>"; };
 		EC2BB801864A8BC489F075F3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -108,6 +110,7 @@
 			children = (
 				2D803A594AFE7374C22EE1F1 /* FloatingPanel.swift */,
 				B7F3C5247926F15A59C24F65 /* PanelController.swift */,
+				E5088FFF5129D32037CD1588 /* PanelPlacement.swift */,
 				78541A4C05F1E2CC960719BC /* PanelTheme.swift */,
 				77279B36634CDA20D2389308 /* SessionListView.swift */,
 				0E9ADCEA003CB4286CFAA4EB /* SessionRowView.swift */,
@@ -248,6 +251,7 @@
 				24254FE448BC6493821EC81B /* ITermBridge.swift in Sources */,
 				89A7541D6528E7C7C21D3D60 /* JumpShortcutModifiers.swift in Sources */,
 				823EB36C04CED2EB4478CF66 /* PanelController.swift in Sources */,
+				8FCC5115AC5EBB7294414D88 /* PanelPlacement.swift in Sources */,
 				EBDC2325B88BB798D0DE1AAD /* PanelTheme.swift in Sources */,
 				BE04522F068B427CC27CAD35 /* PlanUsage.swift in Sources */,
 				5DC6A0778927B66FF352E118 /* PreferencesView.swift in Sources */,

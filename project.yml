@@ -25,8 +25,16 @@ targets:
         SWIFT_VERSION: "5.9"
         SWIFT_STRICT_CONCURRENCY: minimal
         INFOPLIST_FILE: Claudifications/Info.plist
-        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_ENTITLEMENTS: Claudifications/Claudifications.entitlements
+        # Ad-hoc by default so a clone builds and runs without any Apple
+        # account. The release workflow re-signs the finished bundle with the
+        # Developer ID identity; nothing here needs a team.
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
         DEVELOPMENT_TEAM: ""
+        # On for local builds too, so an entitlement the hardened runtime
+        # rejects fails on your machine rather than in a notarized release.
+        ENABLE_HARDENED_RUNTIME: YES
       debug:
         SWIFT_OPTIMIZATION_LEVEL: "-Onone"
         DEBUG_INFORMATION_FORMAT: dwarf

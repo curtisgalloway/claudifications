@@ -7,6 +7,12 @@ import Foundation
 /// The modifier-key combination used with digits 1–9 to jump to a waiting agent.
 /// Shift-Command is deliberately not offered: ⇧⌘3/4/5 are the system screenshot
 /// shortcuts and cannot be shadowed reliably.
+///
+/// Control-Option is the default because it is the only one of the four that no
+/// common app already binds to 1–9 — see `conflictingApps`. There is no way to
+/// discover this at runtime: `RegisterEventHotKey` reports `eventHotKeyExistsErr`
+/// only for a duplicate within the same process, so it stays silent when another
+/// application owns the combination.
 enum JumpShortcutModifiers: String, CaseIterable, Identifiable {
     case optionCommand
     case controlOption
@@ -15,7 +21,7 @@ enum JumpShortcutModifiers: String, CaseIterable, Identifiable {
     case off
 
     static let storageKey = "jumpShortcutModifiers"
-    static let defaultValue: JumpShortcutModifiers = .optionCommand
+    static let defaultValue: JumpShortcutModifiers = .controlOption
 
     static var current: JumpShortcutModifiers {
         let raw = UserDefaults.standard.string(forKey: storageKey) ?? ""
@@ -43,6 +49,26 @@ enum JumpShortcutModifiers: String, CaseIterable, Identifiable {
         case .controlOptionCommand: return "⌃⌥⌘  Control-Option-Command"
         case .off: return "Off"
         }
+    }
+
+    /// Apps that already bind this combination to 1–9, so registering it here
+    /// takes those commands over while Claudifications runs. Read off the menu
+    /// bars of the stock apps rather than guessed — but it is a snapshot of a
+    /// few apps, not an exhaustive list, so it reads as a caution.
+    var conflictingApps: [String] {
+        switch self {
+        case .optionCommand: return ["Preview", "Messages", "Finder"]
+        case .controlCommand: return ["Finder", "Messages", "Xcode"]
+        case .controlOptionCommand: return ["Finder"]
+        case .controlOption, .off: return []
+        }
+    }
+
+    /// One-line caution for the picker, or nil when nothing is known to clash.
+    var conflictNote: String? {
+        let apps = conflictingApps
+        guard !apps.isEmpty else { return nil }
+        return "\(symbols)1–9 is already used by \(apps.formatted(.list(type: .and)))."
     }
 
     /// Carbon modifier mask for RegisterEventHotKey, or nil when disabled.

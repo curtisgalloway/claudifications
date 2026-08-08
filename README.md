@@ -9,8 +9,10 @@ A native macOS app that watches all your running [Claude Code](https://claude.ai
 - **Floating notification panel** (top-right, non-focus-stealing) lists every Claude session waiting for input, with project name, git branch, working directory, and how long it's been waiting — the branch is what tells two agents in the same repo apart
 - **Sound alert** plays when the panel first appears, not on subsequent updates
 - **Click to jump** directly to the right iTerm2 tab/pane
-- **Jump from the keyboard** with ⌥⌘1–9 anywhere in the system; each row shows
-  its own shortcut, and the modifiers are configurable in Preferences
+- **Jump from the keyboard** with ⌃⌥1–9 anywhere in the system; each row shows
+  its own shortcut, and the modifiers are configurable in Preferences —
+  Control-Option is the default because it is the only offered combination that
+  Preview, Messages, Finder and Xcode don't already bind to 1–9
 - **Dismiss** individual sessions (✕ per row) or all at once (✕ in header)
 - **Menu bar icon** for quick access and preferences
 - **Plan usage meters** at the top of the menu bar dropdown — the same

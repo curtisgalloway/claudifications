@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-"""Claude Code status line that records Claude.ai plan usage.
+"""Claude Code status line: directory + model/thinking + Claude.ai plan usage.
 
 Wired as `statusLine` in ~/.claude/settings.json. Claude Code pipes the session
 status JSON on stdin; its `rate_limits` block carries the same subscription
 usage that /usage shows. We persist that to ~/.claude/claudifications/usage.json
-for Claudifications' menu bar readout, and echo a compact summary back so the
-terminal status line isn't left blank.
+for Claudifications' menu bar readout, and echo a compact summary back.
+
+The line leads with the session's directory so parallel sessions in different
+terminal tabs are tellable apart at a glance; the model and thinking level
+(which the default status line shows, and a custom one replaces) come next,
+then usage. The directory is printed even when usage is unavailable, so the
+line is never blank.
 
 This deliberately does NOT live in ~/.claude/fleet-status/: the app sweeps that
 directory and deletes every .json that doesn't parse as a session record, which
@@ -25,6 +30,10 @@ import time
 STATUS_DIR = os.path.join(os.path.expanduser("~"), ".claude", "claudifications")
 OUT_PATH = os.path.join(STATUS_DIR, "usage.json")
 
+# Widest directory label we'll print. Longer paths drop leading components
+# rather than wrapping the status line onto a second row.
+MAX_DIR_WIDTH = 40
+
 
 def window(limits, key):
     w = limits.get(key)
@@ -36,21 +45,59 @@ def window(limits, key):
     return {"used_percentage": float(used), "resets_at": int(resets)}
 
 
-def main():
-    try:
-        data = json.load(sys.stdin)
-    except Exception:
-        return
+def directory(data):
+    """The session's directory, home-collapsed and trimmed to fit."""
+    workspace = data.get("workspace")
+    if not isinstance(workspace, dict):
+        workspace = {}
+    path = workspace.get("current_dir") or data.get("cwd") or workspace.get(
+        "project_dir")
+    if not isinstance(path, str) or not path:
+        return None
 
-    limits = data.get("rate_limits") or {}
-    five, seven = window(limits, "five_hour"), window(limits, "seven_day")
+    home = os.path.expanduser("~")
+    if path == home:
+        return "~"
+    if path.startswith(home + os.sep):
+        path = "~" + path[len(home):]
 
-    # rate_limits is absent for non-subscribers and before a session's first API
-    # response. Leave any previously written (still useful) file alone rather
-    # than replacing good data with nothing.
-    if five is None and seven is None:
-        return
+    if len(path) <= MAX_DIR_WIDTH:
+        return path
 
+    # Keep whole trailing components — the tail is what identifies the repo.
+    kept = []
+    width = 1  # the leading ellipsis
+    for part in reversed(path.split(os.sep)):
+        if not part:
+            continue
+        if width + 1 + len(part) > MAX_DIR_WIDTH and kept:
+            break
+        kept.insert(0, part)
+        width += 1 + len(part)
+    return os.sep.join(["…"] + kept)
+
+
+def model_label(data):
+    """Model name plus thinking level, e.g. "Fable 5 xhigh"."""
+    model = data.get("model")
+    if not isinstance(model, dict):
+        return None
+    name = model.get("display_name") or model.get("id")
+    if not isinstance(name, str) or not name:
+        return None
+
+    thinking = data.get("thinking")
+    if isinstance(thinking, dict) and thinking.get("enabled") is False:
+        return name + " no thinking"
+    effort = data.get("effort")
+    level = effort.get("level") if isinstance(effort, dict) else None
+    if isinstance(level, str) and level:
+        return "%s %s" % (name, level)
+    return name
+
+
+def record(five, seven):
+    """Publish plan usage for the Claudifications menu bar readout."""
     payload = {"updated_at": int(time.time())}
     if five:
         payload["five_hour"] = five
@@ -73,7 +120,29 @@ def main():
     except Exception:
         pass
 
+
+def main():
+    try:
+        data = json.load(sys.stdin)
+    except Exception:
+        return
+
+    limits = data.get("rate_limits") or {}
+    five, seven = window(limits, "five_hour"), window(limits, "seven_day")
+
+    # rate_limits is absent for non-subscribers and before a session's first API
+    # response. Leave any previously written (still useful) file alone rather
+    # than replacing good data with nothing.
+    if five or seven:
+        record(five, seven)
+
     parts = []
+    where = directory(data)
+    if where:
+        parts.append(where)
+    label = model_label(data)
+    if label:
+        parts.append(label)
     if five:
         parts.append("5h %.0f%%" % five["used_percentage"])
     if seven:

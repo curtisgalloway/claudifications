@@ -135,6 +135,10 @@ Claudifications/
 hooks/          shipped as app resources and copied to ~/.claude/hooks by Install Hooks
 ```
 
+The copies in `~/.claude/hooks/` are installed artifacts — edit the scripts
+here in `hooks/` and reinstall (or re-copy), or at minimum sync any direct
+edit back immediately; the installed copies drift otherwise.
+
 Swift sources carry a two-line `// Copyright` + `// Licensed under the Apache
 License, Version 2.0` header; scripts, docs, and config files carry none. Match
 whichever the neighbours use.

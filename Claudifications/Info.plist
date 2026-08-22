@@ -28,5 +28,13 @@
     <string>Claudifications needs to control iTerm2 to focus Claude sessions.</string>
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
+    <key>SUFeedURL</key>
+    <string>https://curtisgalloway.github.io/claudifications/appcast.xml</string>
+    <key>SUPublicEDKey</key>
+    <string>lkT4vDRqoyMbNNehH6rOtWVE4boAVu+p3dyAZTmLciI=</string>
+    <key>SUEnableAutomaticChecks</key>
+    <true/>
+    <key>SUScheduledCheckInterval</key>
+    <integer>86400</integer>
 </dict>
 </plist>

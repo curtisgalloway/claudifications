@@ -81,6 +81,15 @@ they open normally — no `xattr` dance and no Privacy & Security override.
 
 Then launch the app and choose **Install Hooks** from the menu bar icon.
 
+### Auto-updates
+
+Claudifications checks for new releases on its own (about once a day) and
+offers to install them when found — no need to manually re-download for
+future updates. **Check for Updates…** in the menu bar triggers a check any
+time; turn automatic checks off in **Preferences → Updates** if you'd rather
+update manually. Updates are downloaded from GitHub Releases and verified
+with [Sparkle](https://sparkle-project.org) before install.
+
 ### Build from source
 
 ```bash
@@ -203,7 +212,7 @@ The hardened runtime is on for every configuration, which is why
 is what lets click-to-jump drive iTerm2. Building locally with the same setting
 means an entitlement problem shows up on your machine, not in a release.
 
-Five repository secrets drive it (Settings → Secrets and variables → Actions):
+Six repository secrets drive it (Settings → Secrets and variables → Actions):
 
 | Secret | What it holds |
 | --- | --- |
@@ -212,6 +221,7 @@ Five repository secrets drive it (Settings → Secrets and variables → Actions
 | `APPLE_ASC_KEY_ID` | App Store Connect API **Key ID** |
 | `APPLE_ASC_ISSUER_ID` | App Store Connect API **Issuer ID** |
 | `APPLE_ASC_KEY_P8` | base64 of the `AuthKey_<KeyID>.p8` file |
+| `SPARKLE_PRIVATE_KEY` | the EdDSA private key `generate_keys -x` exports, used to sign each release for Sparkle |
 
 To produce them:
 
@@ -231,6 +241,30 @@ downloads exactly once.
 ```bash
 base64 -i AuthKey_XXXXXXXXXX.p8 | pbcopy   # → APPLE_ASC_KEY_P8
 ```
+
+**Sparkle key.** Generated once, locally, from the `bin/` tools in Sparkle's
+[release archive](https://github.com/sparkle-project/Sparkle/releases) (the
+SPM package `project.yml` depends on doesn't include them):
+
+```bash
+./bin/generate_keys              # public key → paste into Info.plist's SUPublicEDKey
+./bin/generate_keys -x key.pem   # private key → SPARKLE_PRIVATE_KEY, then delete key.pem
+```
+
+Compromising this key would let someone push a malicious "update" to every
+installed copy of the app, so treat it like the Developer ID certificate: keep
+a durable copy in 1Password, and don't let a plaintext export linger on disk.
+
+### Auto-update feed
+
+`docs/appcast.xml` is Sparkle's update feed, served over GitHub Pages (repo
+Settings → Pages: source = `main` branch, `/docs` folder) at
+`https://curtisgalloway.github.io/claudifications/appcast.xml`. Each release
+run downloads Sparkle's `generate_appcast` tool, signs `Claudifications.zip`
+with `SPARKLE_PRIVATE_KEY`, and merges the new entry into `docs/appcast.xml`
+via `scripts/merge_appcast_item.py` — then commits and pushes that one file
+straight to `main`. It's the only thing this workflow ever writes to `main`
+outside a PR, and it only runs from a `v*` tag push.
 
 To check a published release from a clean machine:
 

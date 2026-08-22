@@ -5,6 +5,14 @@ options:
     macOS: "14.0"
   defaultConfig: Debug
 
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    # Pinned exactly, not `from:`, so the embedded framework always matches
+    # the CLI-tools version release.yml downloads to sign updates with —
+    # letting the two drift is how a signature format mismatch would ship.
+    exactVersion: 2.9.6
+
 targets:
   Claudifications:
     type: application
@@ -15,6 +23,8 @@ targets:
         type: resource
       - path: hooks/usage-statusline.py
         type: resource
+    dependencies:
+      - package: Sparkle
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: net.curtisg.claudifications

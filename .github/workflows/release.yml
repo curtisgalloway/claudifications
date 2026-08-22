@@ -70,25 +70,60 @@ jobs:
           rm -f "$CERT_PATH"
           security find-identity -v -p codesigning "$KEYCHAIN"
 
-      # Re-signs over the ad-hoc signature xcodebuild applied. The bundle holds
-      # a single Mach-O and no nested frameworks or helpers, so one pass covers
-      # it — no --deep needed (and Apple discourages it).
+      # Re-signs over the ad-hoc signature xcodebuild applied. Sparkle.framework
+      # bundles Autoupdate.app and XPC services this (non-sandboxed) app never
+      # invokes, but notarization still inspects every Mach-O in the bundle —
+      # so unlike before Sparkle, this is no longer a single-pass sign: nested
+      # components need their own real signature first, innermost first, each
+      # with --options runtime for the hardened runtime notarization requires.
       #
       # --timestamp is required for notarization: without a secure timestamp
       # the signature stops validating the moment the certificate expires.
       - name: Sign
         run: |
+          APP=build/Release/Claudifications.app
+          FRAMEWORK="$APP/Contents/Frameworks/Sparkle.framework"
+
+          # Resolved rather than hardcoded: Sparkle 2.9.6 uses Versions/B, and
+          # a future version bump would silently change it.
+          FW_VERSION=$(readlink "$FRAMEWORK/Versions/Current")
+          FW_ROOT="$FRAMEWORK/Versions/$FW_VERSION"
+
+          # The four nested signables Sparkle ships. This app (non-sandboxed)
+          # never invokes them, but notarization inspects every Mach-O in the
+          # bundle, so each needs its own Developer ID + hardened-runtime
+          # signature, innermost first. Note Autoupdate is a bare executable,
+          # not a bundle, and Updater.app is easy to miss.
+          #
+          # A missing path is a hard error, never a skip: an unsigned helper
+          # would otherwise sail through this step and fail deep inside
+          # notarization with a far less obvious message.
+          for nested in \
+            "$FW_ROOT/XPCServices/Downloader.xpc" \
+            "$FW_ROOT/XPCServices/Installer.xpc" \
+            "$FW_ROOT/Autoupdate" \
+            "$FW_ROOT/Updater.app"
+          do
+            if [ ! -e "$nested" ]; then
+              echo "::error::Expected Sparkle component missing: $nested"
+              exit 1
+            fi
+            codesign --force --timestamp --options runtime \
+              --sign "Developer ID Application" "$nested"
+          done
+
+          codesign --force --timestamp --options runtime \
+            --sign "Developer ID Application" "$FW_ROOT"
+
           codesign --force --timestamp --options runtime \
             --entitlements Claudifications/Claudifications.entitlements \
             --sign "Developer ID Application" \
-            build/Release/Claudifications.app
-          codesign --verify --deep --strict --verbose=2 \
-            build/Release/Claudifications.app
+            "$APP"
+          codesign --verify --deep --strict --verbose=2 "$APP"
           # xcodebuild's ad-hoc pass adds get-task-allow, which notarization
           # rejects. Re-signing replaces the entitlement set wholesale, so it
           # should be gone — fail here rather than 10 minutes into notarytool.
-          if codesign -d --entitlements - --xml \
-               build/Release/Claudifications.app 2>/dev/null \
+          if codesign -d --entitlements - --xml "$APP" 2>/dev/null \
                | grep -q get-task-allow; then
             echo "::error::get-task-allow survived re-signing; notarization would reject this."
             exit 1
@@ -125,6 +160,42 @@ jobs:
           ditto -c -k --keepParent build/Release/Claudifications.app Claudifications.zip
           shasum -a 256 Claudifications.zip | tee checksum.txt
 
+      # Sparkle's SPM package doesn't ship generate_appcast/sign_update — only
+      # the .tar.xz release asset does. Version pinned to match project.yml's
+      # `exactVersion`, so the tool that signs and the framework that verifies
+      # agree on the signature format.
+      - name: Download Sparkle CLI tools
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/sparkle-tools.tar.xz" \
+            https://github.com/sparkle-project/Sparkle/releases/download/2.9.6/Sparkle-2.9.6.tar.xz
+          mkdir -p "$RUNNER_TEMP/sparkle-tools"
+          tar -xf "$RUNNER_TEMP/sparkle-tools.tar.xz" -C "$RUNNER_TEMP/sparkle-tools"
+
+      # generate_appcast infers sparkle:version/shortVersionString from the
+      # bundle inside the zip and computes the EdDSA signature itself, so it
+      # runs against a scratch folder holding only this release's zip rather
+      # than the full release history: every GitHub release asset shares the
+      # filename Claudifications.zip, and --download-url-prefix is one flat
+      # string per invocation — it can't vary by historical tag.
+      - name: Sign update and generate appcast entry
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          KEY_PATH="$RUNNER_TEMP/sparkle_private_key"
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$KEY_PATH"
+
+          NEW_DIR="$RUNNER_TEMP/appcast-new"
+          mkdir -p "$NEW_DIR"
+          cp Claudifications.zip "$NEW_DIR/"
+          "$RUNNER_TEMP/sparkle-tools/bin/generate_appcast" \
+            -f "$KEY_PATH" \
+            --download-url-prefix "https://github.com/curtisgalloway/claudifications/releases/download/$TAG/" \
+            "$NEW_DIR"
+
+          rm -f "$KEY_PATH"
+          python3 scripts/merge_appcast_item.py "$NEW_DIR/appcast.xml" docs/appcast.xml
+
       - name: Write release notes
         env:
           TAG: ${{ github.ref_name }}
@@ -158,6 +229,31 @@ jobs:
             --title "$TAG" \
             --notes-file notes.md \
             --generate-notes
+
+      # Deliberately after Create release: the appcast entry points at the
+      # release's download URL, so publishing the feed first would briefly
+      # advertise an asset that 404s to anyone whose update check landed in
+      # the gap.
+      #
+      # This is the only thing the workflow writes to main, and only from a
+      # v* tag push — narrow enough to push directly rather than open a PR
+      # that would leave the update feed unpublished until someone merged it.
+      - name: Commit updated appcast
+        run: |
+          # The checkout is a detached HEAD at the tag with docs/appcast.xml
+          # modified in place. Stash the new content, restore the file so the
+          # branch switch is clean, then move to main — which may have moved
+          # since the tag was cut — and reapply.
+          cp docs/appcast.xml "$RUNNER_TEMP/appcast-updated.xml"
+          git checkout -- docs/appcast.xml || true
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B main origin/main
+          cp "$RUNNER_TEMP/appcast-updated.xml" docs/appcast.xml
+          git add docs/appcast.xml
+          git commit -m "Add ${{ github.ref_name }} to appcast" || echo "No appcast changes to commit"
+          git push origin HEAD:main
 
       # always(), so a failure between import and here doesn't strand the
       # signing key on the runner.

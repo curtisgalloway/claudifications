@@ -1,9 +1,13 @@
 // Copyright 2025 Curtis Galloway
 // Licensed under the Apache License, Version 2.0
 
+import Sparkle
 import SwiftUI
 
 struct PreferencesView: View {
+    let updater: SPUUpdater
+    @State private var automaticallyChecksForUpdates: Bool
+
     @AppStorage("notificationSound") private var selectedSound: String = SoundPlayer.defaultSound
     @AppStorage(JumpShortcutModifiers.storageKey)
     private var jumpModifiersRaw = JumpShortcutModifiers.defaultValue.rawValue
@@ -19,6 +23,11 @@ struct PreferencesView: View {
     /// Stands in for "wherever you dragged it" — a placement no corner preset
     /// can express, so it is shown as the selection but never chosen from here.
     private static let customTag = "custom"
+
+    init(updater: SPUUpdater) {
+        self.updater = updater
+        _automaticallyChecksForUpdates = State(initialValue: updater.automaticallyChecksForUpdates)
+    }
 
     private var jumpModifiers: JumpShortcutModifiers {
         JumpShortcutModifiers(rawValue: jumpModifiersRaw) ?? .defaultValue
@@ -47,6 +56,15 @@ struct PreferencesView: View {
 
     var body: some View {
         Form {
+            Section {
+                Toggle("Automatically check for updates", isOn: $automaticallyChecksForUpdates)
+                    .onChange(of: automaticallyChecksForUpdates) { _, newValue in
+                        updater.automaticallyChecksForUpdates = newValue
+                    }
+            } header: {
+                Text("Updates")
+            }
+
             Section {
                 HStack(spacing: 8) {
                     Picker("Sound", selection: $selectedSound) {

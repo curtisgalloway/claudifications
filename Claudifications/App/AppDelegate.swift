@@ -3,6 +3,7 @@
 
 import AppKit
 import Observation
+import Sparkle
 import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
@@ -12,15 +13,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
     private var preferencesWindowController: PreferencesWindowController?
     private var hotkeyManager: HotkeyManager!
+    private var updaterController: SPUStandardUpdaterController!
 
     private var installHooksItem: NSMenuItem!
     private var removeHooksItem: NSMenuItem!
+    private var checkForUpdatesItem: NSMenuItem!
     private var usageView: NSHostingView<UsageMenuView>!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         store = SessionStore()
         soundPlayer = SoundPlayer()
         panelController = PanelController()
+        updaterController = SPUStandardUpdaterController(
+            startingUpdater: true,
+            updaterDelegate: nil,
+            userDriverDelegate: nil
+        )
 
         setupStatusItem()
         panelController.setup(store: store)
@@ -77,6 +85,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(.separator())
 
         menu.addItem(NSMenuItem(title: "About Claudifications", action: #selector(showAbout), keyEquivalent: ""))
+
+        checkForUpdatesItem = NSMenuItem(
+            title: "Check for Updates…",
+            action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)),
+            keyEquivalent: ""
+        )
+        checkForUpdatesItem.target = updaterController
+        menu.addItem(checkForUpdatesItem)
+
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Preferences…", action: #selector(openPreferences), keyEquivalent: ","))
         menu.addItem(.separator())
@@ -98,6 +115,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let installed = HookInstaller.isInstalled
         installHooksItem.title = installed ? "Reinstall Hooks" : "Install Hooks…"
         removeHooksItem.isEnabled = installed
+        checkForUpdatesItem.isEnabled = updaterController.updater.canCheckForUpdates
 
         // Read on open rather than polling: the readout is only ever visible
         // while the menu is down, so a background timer would be wasted work.
@@ -133,7 +151,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func openPreferences() {
         if preferencesWindowController == nil {
-            preferencesWindowController = PreferencesWindowController()
+            preferencesWindowController = PreferencesWindowController(updater: updaterController.updater)
         }
         preferencesWindowController?.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)

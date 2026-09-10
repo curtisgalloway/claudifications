@@ -103,7 +103,7 @@ def model_label(data):
 
 
 def context_label(data):
-    """Context window bar, e.g. "▓▓▓▓░░░░░░ 42%".
+    """Context window bar, e.g. "ctx: ▓▓▓▓░░░░░░ 42%".
 
     used_percentage is input tokens only (fresh + cache reads + cache writes)
     over context_window_size, which is what Claude Code's own /context and the
@@ -123,7 +123,7 @@ def context_label(data):
     pct = max(0.0, min(100.0, pct))
     filled = int(round(pct / 100.0 * BAR_WIDTH))
     bar = "\u2593" * filled + "\u2591" * (BAR_WIDTH - filled)
-    return "%s %.0f%%" % (bar, pct)
+    return "ctx: %s %.0f%%" % (bar, pct)
 
 
 def record(five, seven):

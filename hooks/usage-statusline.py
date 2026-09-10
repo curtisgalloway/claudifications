@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-"""Claude Code status line: directory + model/thinking + context + plan usage.
+"""Claude Code status line: directory + model/thinking + context window bar.
 
 Wired as `statusLine` in ~/.claude/settings.json. Claude Code pipes the session
 status JSON on stdin; its `rate_limits` block carries the same subscription
 usage that /usage shows. We persist that to ~/.claude/claudifications/usage.json
-for Claudifications' menu bar readout, and echo a compact summary back.
+for Claudifications' menu bar readout. Plan usage is deliberately NOT printed
+on the line itself: the menu bar already shows it, and the status line's row
+is better spent on per-session state.
 
 The line leads with the session's directory so parallel sessions in different
 terminal tabs are tellable apart at a glance; the model and thinking level
 (which the default status line shows, and a custom one replaces) come next,
-then context window usage, then plan usage. The directory is printed even when usage is unavailable, so the
+then a context window bar. The directory is printed even when usage is unavailable, so the
 line is never blank.
 
 This deliberately does NOT live in ~/.claude/fleet-status/: the app sweeps that
@@ -29,6 +31,10 @@ import time
 
 STATUS_DIR = os.path.join(os.path.expanduser("~"), ".claude", "claudifications")
 OUT_PATH = os.path.join(STATUS_DIR, "usage.json")
+
+# Cells in the context bar. 10 keeps each cell at a round 10% so the bar can
+# be read without the number, and fits beside the directory on a narrow pane.
+BAR_WIDTH = 10
 
 # Widest directory label we'll print. Longer paths drop leading components
 # rather than wrapping the status line onto a second row.
@@ -97,7 +103,7 @@ def model_label(data):
 
 
 def context_label(data):
-    """Context window usage, e.g. "ctx 42%".
+    """Context window bar, e.g. "▓▓▓▓░░░░░░ 42%".
 
     used_percentage is input tokens only (fresh + cache reads + cache writes)
     over context_window_size, which is what Claude Code's own /context and the
@@ -111,9 +117,13 @@ def context_label(data):
     if used is None:
         return None
     try:
-        return "ctx %.0f%%" % float(used)
+        pct = float(used)
     except (TypeError, ValueError):
         return None
+    pct = max(0.0, min(100.0, pct))
+    filled = int(round(pct / 100.0 * BAR_WIDTH))
+    bar = "\u2593" * filled + "\u2591" * (BAR_WIDTH - filled)
+    return "%s %.0f%%" % (bar, pct)
 
 
 def record(five, seven):
@@ -166,10 +176,6 @@ def main():
     ctx = context_label(data)
     if ctx:
         parts.append(ctx)
-    if five:
-        parts.append("5h %.0f%%" % five["used_percentage"])
-    if seven:
-        parts.append("7d %.0f%%" % seven["used_percentage"])
     sys.stdout.write("  ".join(parts))
 
 

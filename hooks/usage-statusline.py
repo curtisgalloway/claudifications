@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Claude Code status line: directory + model/thinking + Claude.ai plan usage.
+"""Claude Code status line: directory + model/thinking + context + plan usage.
 
 Wired as `statusLine` in ~/.claude/settings.json. Claude Code pipes the session
 status JSON on stdin; its `rate_limits` block carries the same subscription
@@ -9,7 +9,7 @@ for Claudifications' menu bar readout, and echo a compact summary back.
 The line leads with the session's directory so parallel sessions in different
 terminal tabs are tellable apart at a glance; the model and thinking level
 (which the default status line shows, and a custom one replaces) come next,
-then usage. The directory is printed even when usage is unavailable, so the
+then context window usage, then plan usage. The directory is printed even when usage is unavailable, so the
 line is never blank.
 
 This deliberately does NOT live in ~/.claude/fleet-status/: the app sweeps that
@@ -96,6 +96,26 @@ def model_label(data):
     return name
 
 
+def context_label(data):
+    """Context window usage, e.g. "ctx 42%".
+
+    used_percentage is input tokens only (fresh + cache reads + cache writes)
+    over context_window_size, which is what Claude Code's own /context and the
+    autocompact threshold are measured against. It is null before the first API
+    response and briefly after /compact, in which case we print nothing.
+    """
+    ctx = data.get("context_window")
+    if not isinstance(ctx, dict):
+        return None
+    used = ctx.get("used_percentage")
+    if used is None:
+        return None
+    try:
+        return "ctx %.0f%%" % float(used)
+    except (TypeError, ValueError):
+        return None
+
+
 def record(five, seven):
     """Publish plan usage for the Claudifications menu bar readout."""
     payload = {"updated_at": int(time.time())}
@@ -143,6 +163,9 @@ def main():
     label = model_label(data)
     if label:
         parts.append(label)
+    ctx = context_label(data)
+    if ctx:
+        parts.append(ctx)
     if five:
         parts.append("5h %.0f%%" % five["used_percentage"])
     if seven:
